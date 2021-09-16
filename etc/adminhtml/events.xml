@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+     <event name="sales_order_invoice_pay">
+        <observer name="wizpay" instance="Wizpay\Wizpay\Observer\SalesOrderInvoicePay" />
+    </event>
+     <event name="sales_order_payment_refund">
+        <observer name="creditmemo_refund" instance="Wizpay\Wizpay\Observer\SalesOrderCreditmemoSave" />
+    </event>
+    <event name="view_block_abstract_to_html_before">
+        <observer name="wizpay_view_block_abstract_to_html_before" instance="Wizpay\Wizpay\Observer\BeforeCreditmemoLoad" />
+    </event>
+    <event name="view_block_abstract_to_html_After">
+        <observer name="wizpay_view_block_abstract_to_html_after" instance="Wizpay\Wizpay\Observer\BeforeCreditmemoLoad" />
+    </event>
+    <event name="order_cancel_after">
+        <observer name="wizpay_order_cancel_after" instance="Wizpay\Wizpay\Observer\SalesOrderItemCancel" />
+    </event>
+</config>

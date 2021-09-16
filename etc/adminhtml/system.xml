@@ -1,0 +1,82 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="payment">
+
+            <!-- Group-1 for Wizpay Settings -->
+
+            <group id="wizpay" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>
+                    <![CDATA[<img class="brand-logo" style="margin: 1px 19px -6px;" src="https://creditcorp2.nicer8.com/wp-content/uploads/2021/04/WizPay_Horiz_RGB-1.png" width="100px"/>]]>
+                </label>
+                <field id="gateway_logo" translate="label" type="image" sortOrder="40" showInDefault="0" showInWebsite="0" showInStore="0">
+                    <backend_model>Magento\Config\Model\Config\Backend\Image</backend_model>
+                    <frontend_model>Wizpay\Wizpay\Block\System\Config\Form\Field\Image</frontend_model>
+                </field>
+                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                </field>
+                <field id="api_key" translate="label" type="password" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" >
+                    <label>Wizpay API Key</label>
+                     <validate>required-entry no-whitespace</validate> 
+                    <backend_model>Wizpay\Wizpay\Model\Config\Backend\FieldValidation</backend_model>
+                    <comment>Enter the API Key provided by Wizpay into the "Wizpay API Key" field.</comment>
+                </field>
+                <field id="capture" translate="label" type="select" sortOrder="23" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Capture</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Whether or not to immediately capture the charge. When unchecked, the charge issues an authorization and will need to be captured later.</comment>
+                </field>
+                <field id="success_url" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Success URL</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <validate>validate-url no-whitespace</validate>
+                    <comment>User will be returned to this page after successful transaction on Wizpay payment page.</comment>                  
+                </field>
+                <field id="failed_url" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Failed URL</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <validate>validate-url no-whitespace</validate>
+                    <comment>User will be returned to this page after failed transaction on Wizpay payment page.</comment>                 
+                </field>
+
+                <!-- Group-2 for Min/Max Wizpay Amount -->
+
+                <group id="min_max_wizpay" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Minimum/Maximum Amount Settings</label>
+                    <attribute type="expanded">1</attribute>
+                    <field id="wz_min_amount" translate="label" type="label" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Wizpay Minimum Payment Amount</label>
+                        <backend_model>Wizpay\Wizpay\Model\Config\Backend\FieldValidation</backend_model>
+                        <validate>validate-number</validate>
+                        <comment>This information is supplied by Wizpay and cannot be edited.</comment>
+                    </field>
+                    <field id="wz_max_amount" translate="label" type="label" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Wizpay Maximum Payment Amount</label>
+                       <backend_model>Wizpay\Wizpay\Model\Config\Backend\FieldValidation</backend_model>
+                       <validate>validate-number</validate>
+                        <comment>This information is supplied by Wizpay and cannot be edited.</comment>
+                    </field>
+                    <field id="merchant_min_amount" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Merchant Minimum Payment Amount</label>
+                       <backend_model>Wizpay\Wizpay\Model\Config\Backend\FieldValidation</backend_model>
+                        <validate>validate-number</validate>
+                        <comment>The minimum order amount which merchant finds eligible to be processed by Wizpay</comment>
+                    </field>
+                    <field id="merchant_max_amount" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Merchant Maximum Payment Amount</label>
+                       <backend_model>Wizpay\Wizpay\Model\Config\Backend\FieldValidation</backend_model>
+                        <validate>validate-number</validate>
+                        <comment>The Maximum order amount which merchant finds eligible to be processed by Wizpay</comment>
+                    </field>
+                    <field id="merchant_min_amounts" translate="label" type="hidden" sortOrder="90" showInDefault="1" showInWebsite="0" showInStore="0">
+                       <backend_model>Wizpay\Wizpay\Model\Config\Backend\FieldValidation</backend_model>
+                    </field>
+                </group>  
+            </group>
+        </section>
+    </system>
+</config>
