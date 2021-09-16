@@ -2,6 +2,8 @@
 
 namespace Wizpay\Wizpay\Helper;
 
+require_once('access.php');
+
 use \Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\ObjectManagerInterface;
@@ -9,13 +11,15 @@ use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Locale\ResolverInterface;
 use Magento\Payment\Helper\Data as PaymentData;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Zend\Log\Writer\Stream;
-use Zend\Log\Logger;
 use Magento\Framework\Mail\Template\TransportBuilder;
 use Magento\Framework\Mail\TransportInterfaceFactory;
 
+
+
+
 class Data extends AbstractHelper
 {
+    protected $logger;
 
     /**
      * @var \Magento\Framework\ObjectManagerInterface
@@ -40,6 +44,8 @@ class Data extends AbstractHelper
 
     protected $curlClient;
 
+    private $wizpay_url_manager;
+
     /**
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \Magento\Framework\App\Helper\Context $context
@@ -55,7 +61,8 @@ class Data extends AbstractHelper
         ResolverInterface $localeResolver,
         TransportBuilder $transportBuilder,
         TransportInterfaceFactory $mailTransportFactory,
-        \Magento\Framework\HTTP\Client\Curl $curl
+        \Magento\Framework\HTTP\Client\Curl $curl,
+        \Psr\Log\LoggerInterface $logger
     ) {
         //$this->_gatewayConfig = $gatewayConfig;
         $this->_objectManager = $objectManager;
@@ -67,15 +74,16 @@ class Data extends AbstractHelper
         $this->mailTransportFactory = $mailTransportFactory;
         $this->_scopeConfig   = $context->getScopeConfig();
 
+        $this->logger = $logger;
+
+        $this->wizpay_url_manager = new WizpayUrlAccessManager();
+
         parent::__construct($context);
     }
 
     public function initiateWizpayLogger($log)
     {
-        $writer = new Stream(BP . '/var/log/wizpay'.date("Y-m-d").'.log');
-        $logger = new Logger();
-        $logger->addWriter($writer);
-        $logger->info($log);
+        $this->logger->info($log);
     }
 
     public function createWcog($apiresult)
@@ -156,15 +164,8 @@ class Data extends AbstractHelper
     //  return 'https://uatapi.wizardpay.com.au/v1/api/';
     // }
     private function apiUrl()
-    {
-        $this->base = 'https://devapi.wizpay.com.au/';
-      //  $this->base = 'https://stagingapi.wizpay.com.au/';
-        // $this->base = 'https://uatapi.wizardpay.com.au/';
-        $this->version = 'v1/';
-        $this->intermediate = 'api/';
-        $this->apicall = '';
-        $apiurl = $this->base . $this->version . $this->intermediate;
-        return $apiurl;
+    {        
+        return $this->wizpay_url_manager->GetApiUrl();
     }
 
     public function getCurlClient()
