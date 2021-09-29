@@ -10,8 +10,8 @@ class WizpayUrlAccessManager{
     private  $apicall = '';
 
 
-    public function GetApiUrl($isDevModel = false){
-        if($isDevModel){
+    public function GetApiUrl($environment){
+        if($environment == 1){
             return $this->test_url . $this->version . $this->intermediate;
         }else{
             return $this->base_url . $this->version . $this->intermediate;   

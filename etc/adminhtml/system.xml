@@ -38,12 +38,24 @@
                     <source_model>Wizpay\Wizpay\Model\Adminhtml\Source\EnvironmentArray</source_model>
                 </field>
 
-
                 <field id="api_key" translate="label" type="password" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1" >
                     <label>Wizpay API Key</label>
                      <validate>required-entry no-whitespace</validate> 
                     <backend_model>Wizpay\Wizpay\Model\Config\Backend\FieldValidation</backend_model>
-                    <comment>Enter the API Key provided by Wizpay into the "Wizpay API Key" field.</comment>
+                    <comment>Enter API key provided by Wizpay into the "Wizpay API key"</comment>
+                    <depends> <!-- This field will only be visible if the field with the id A_UNIQUE_FIELD_ID is set to value 1 -->
+                        <field id="environment">0</field>
+                    </depends>
+                </field>
+
+                <field id="api_key_sandbox" translate="label" type="password" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1" >
+                    <label>Wizpay Sandbox API Key</label>
+                     <validate>required-entry no-whitespace</validate> 
+                    <backend_model>Wizpay\Wizpay\Model\Config\Backend\FieldValidation</backend_model>
+                    <comment>Enter Sandbox API key provided by Wizpay into the "Wizpay Sandbox API key"</comment>
+                    <depends> <!-- This field will only be visible if the field with the id A_UNIQUE_FIELD_ID is set to value 1 -->
+                        <field id="environment">1</field>
+                    </depends>
                 </field>
                 
                 <field id="success_url" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">

@@ -73,9 +73,19 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
             $mmax = trim($getallpostdata['merchant_max_amount']['value']);
         }
 
-        $get_api_key = $allpostdata['groups']['wizpay']['fields']['api_key']['value'];
+        
 
-        $wzresponse = $this->helper->callLimitapi($get_api_key);
+        $environment = intval($allpostdata['groups']['wizpay']['fields']['environment']['value']);
+        $get_api_key = '';
+        
+        if($environment == 1){
+            // set api key to sandbox key
+            $get_api_key = $allpostdata['groups']['wizpay']['fields']['api_key_sandbox']['value'];
+        }else{
+            $get_api_key = $allpostdata['groups']['wizpay']['fields']['api_key']['value'];
+        }
+
+        $wzresponse = $this->helper->callLimitapi($get_api_key, $environment);
 
         if (!is_array($wzresponse)) {
 

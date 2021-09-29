@@ -114,7 +114,22 @@ class Data extends AbstractHelper
     public function getConfig($config_path)
     {
 
-        return $this->scopeConfig->getValue($config_path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $setting = $this->scopeConfig->getValue($config_path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+
+        // if try to get api key then check environment
+        if($config_path == 'payment/wizpay/api_key'){
+            $environment = $this->scopeConfig->getValue('payment/wizpay/environment', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+            if( $environment == 1){
+                $setting = $this->scopeConfig->getValue('payment/wizpay/api_key_sandbox', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+                $this->initiateWizpayLogger('We are using sandbox api_key: ' . $setting);
+            }else{
+                $this->initiateWizpayLogger('We are using live api_key: ' . $setting);
+            }
+        }
+
+        return $setting;
     }
 
     public function transaction()
@@ -163,9 +178,17 @@ class Data extends AbstractHelper
     
     //  return 'https://uatapi.wizardpay.com.au/v1/api/';
     // }
-    private function apiUrl()
+    private function apiUrl($environment = '')
     {        
-        return $this->wizpay_url_manager->GetApiUrl();
+        if($environment == ''){
+            // get from setting
+            $environment = $this->getConfig('payment/wizpay/environment');
+        }
+        
+
+        $this->initiateWizpayLogger('We are using environment: 1-> Sandbox, 0-> Live: ' . $environment);
+
+        return $this->wizpay_url_manager->GetApiUrl($environment);
     }
 
     public function getCurlClient()
@@ -243,14 +266,15 @@ class Data extends AbstractHelper
         }
     }
 
-    public function callLimitapi($apikey)
+    public function callLimitapi($apikey, $environment)
     {
         $error = false;
         $actualapicall = 'GetPurchaseLimit';
-        $finalapiurl = $this->apiUrl() . $actualapicall;
+        $finalapiurl = $this->apiUrl($environment) . $actualapicall;
         //$finalapiurl = 'http://mywp.preyansh.in/wzapi.php';
         $apiresult = $this->getWizpayapi($finalapiurl, $apikey);
         $this->initiateWizpayLogger('callLimitapi() function called'.PHP_EOL);
+        $this->initiateWizpayLogger('GetLimitApiResult:'. print_r ($apiresult));
         // echo $finalapiurl;
         // echo "<Pre>";
         // print_r($apiresult);
