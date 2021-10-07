@@ -83,7 +83,13 @@ class Data extends AbstractHelper
 
     public function initiateWizpayLogger($log)
     {
-        $this->logger->info($log);
+        $enable_debug = $this->getConfig('payment/wizpay/debug');
+
+        if(intval($enable_debug, 0) == 1 ){
+            $this->logger->info($log);
+        }
+
+        
     }
 
     public function createWcog($apiresult)
@@ -713,4 +719,109 @@ class Data extends AbstractHelper
         }
         return $errormessage;
     }
+
+    private $wizpay_info_style_oneline = 'display: block; padding-top: 5px; padding-bottom: 5px;';
+    private $wizpay_info_style_product_list = '';
+    private $wizpay_info_style_product_detail = '';
+    private $wizpay_info_logo_style = 'max-width: 100px; max-height: 30px; padding-top: 5px; border: none !important; vertical-align: bottom; display: inline-block;';
+    private $wizpay_info_content_style = '';
+    
+
+
+
+    public function getWizpayMessage($type, $price, $assetRepository, $min_price = 0, $max_price = 99999){
+        $banktransferLogoUrl = $assetRepository->getUrlWithParams('Wizpay_Wizpay::images/Group.png', []);
+
+               
+        // get plugin setting
+        $wizpay_is_enable = $this->getConfig('payment/wizpay/active');
+        // get page setting
+        $show_on_product_cat_page = $this->getConfig('payment/wizpay/website_customisation/payment_info_on_catetory_pages');
+        $show_on_product_page = $this->getConfig('payment/wizpay/website_customisation/payment_info_on_product_pages');
+        $show_on_cat_page = $this->getConfig('payment/wizpay/website_customisation/payment_info_on_cart_pages');
+        // get limit
+        $wizpay_minimum_payment_amount = $this->getConfig('payment/wizpay/min_max_wizpay/wz_min_amount');
+        $wizpay_maxmum_payment_amount = $this->getConfig('payment/wizpay/min_max_wizpay/wz_max_amount');
+
+        $wizpay_merchant_min_amount =  $this->getConfig('payment/wizpay/min_max_wizpay/merchant_max_amount');
+        $wizpay_merchant_max_amount =  $this->getConfig('payment/wizpay/min_max_wizpay/merchant_min_amounts');
+
+
+        if (empty($wizpay_merchant_min_amount) || empty($wizpay_merchant_max_amount))
+        {
+
+            $wizpay_merchant_min_amount = $wizpay_minimum_payment_amount;
+            $wizpay_merchant_max_amount = $wizpay_maxmum_payment_amount;
+        }
+
+
+        if(intval($wizpay_is_enable, 0) == 1 
+           && (
+                (floatval($wizpay_merchant_min_amount) <= $price && $price <=  floatval($wizpay_merchant_max_amount))
+                ||
+                ( $min_price > 0 && $max_price < 99999
+                    && floatval($wizpay_merchant_min_amount) <= $min_price && $max_price <= floatval($wizpay_merchant_max_amount))
+           )){
+
+
+            $total_amount = '$' . number_format($price, 2, '.', ','); 
+            $sub_amount = '$' . number_format($price / 4, 2, '.', ',');
+
+
+            if($type == 'List' && intval( $show_on_product_cat_page, 0) == 1){
+                return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_list .'">
+                                    <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /></div>';
+            }
+            else if($type == 'Detail' && intval( $show_on_product_page, 0) == 1){
+                if($min_price > 0 && $max_price < 99999){
+                    // display icon only
+                    return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_list .'">
+                                    <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /></div>';
+                }else{
+                    // display full info
+                    return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
+                        <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
+                        <span style="'. $this->wizpay_info_content_style .'">or 4 payments '. $sub_amount .' of ' . $total_amount . 
+                        ' with Wizpay <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
+                }
+                
+            }
+            else if($type == 'Cart' && intval( $show_on_cat_page, 0) == 1){
+                return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
+                        <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
+                        <span style="'. $this->wizpay_info_content_style .'">or 4 payments '. $sub_amount .' of ' . $total_amount . ' with Wizpay (without shipping fee). 
+                        <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
+            }            
+        }
+        else if(intval($wizpay_is_enable, 0) == 1 ){
+            // out of range
+            if($type == 'Detail' && intval( $show_on_product_page, 0) == 1){
+                if($min_price > 0 && $max_price < 99999){
+                    // display icon only
+                    return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_list .'">
+                                    <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /></div>';
+                }else{
+                    // display full info
+                    return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
+                        <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
+                        <span style="'. $this->wizpay_info_content_style .'"> is available on purchases between '
+                        . '$' . number_format(floatval($wizpay_merchant_min_amount), 2, '.', ',') .' and ' 
+                        . '$' . number_format(floatval($wizpay_merchant_max_amount), 2, '.', ',') . 
+                        ' <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
+                }
+                
+            }
+            else if($type == 'Cart' && intval( $show_on_cat_page, 0) == 1){
+                return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
+                        <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
+                        <span style="'. $this->wizpay_info_content_style .'"> is available on purchases between '
+                        . '$' . number_format(floatval($wizpay_merchant_min_amount), 2, '.', ',') .' and ' 
+                        . '$' . number_format(floatval($wizpay_merchant_max_amount), 2, '.', ',') . 
+                        '<a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
+            } 
+        }
+
+        return '';
+    }
+
 }

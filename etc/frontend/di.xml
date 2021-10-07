@@ -27,4 +27,23 @@
             </argument>
         </arguments>
     </type>
+
+
+    <type name="Magento\Catalog\Block\Product\AbstractProduct">
+        <plugin name="Wizpay_Product_HomeView" type="Wizpay\Wizpay\Block\Catalog\Block\Product\WzAbstractProduct"  disabled="false"/>
+    </type>
+
+    <type name="Magento\Catalog\Block\Product\ListProduct">
+        <plugin name="Wizpay_Product_ListView" type="Wizpay\Wizpay\Block\Catalog\Block\Product\WzListProduct"  disabled="false"/>
+    </type>
+
+
+     <type name="Magento\Catalog\Block\Product\View">
+        <plugin name="Wizpay_Product_View" type="Wizpay\Wizpay\Block\Catalog\Block\Product\WzView" disabled="false"/>
+    </type>
+
+     <type name="Magento\Checkout\Block\Cart">
+        <plugin name="Wizpay_Cart_View" type="Wizpay\Wizpay\Block\Checkout\Block\WzCart" disabled="false"/>
+    </type>
+
 </config>
