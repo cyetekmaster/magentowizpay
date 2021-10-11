@@ -1,156 +1,82 @@
-## Synopsis
-An extension to add integration with Payment Gateway.
-This payment method can be restricted to work only with specific Shipping method.
+<h2> 1.1    New Wzizpay Installation with Composer (Recommended) </h2>
+<p> This section outlines the steps to install Wzizpay plugin using Composer. </p>
 
-## Motivation
-This is one of a collection of examples to demonstrate the features of Magento 2.  The intent of this sample is to demonstrate how to create own Payment Gateway integration
+<ol>
+	<li> Open Command Line Interface and navigate to the Magento directory on your server</li>
+	<li> In CLI, run the below command to install Wzizpay module: <br/> <em>composer require Wzizpay-global/module-Wzizpay</em> </li>
+	<li> At the Composer request, enter your Magento marketplace credentials (public key - username, private key - password)</li>
+	<li> Make sure that Composer finished the installation without errors </li>
+	<li> In CLI, run the Magento setup upgrade: <br/> <em>php bin/magento setup:upgrade</em> </li>
+	<li> In CLI, run the Magento Dependencies Injection Compile: <br/> <em>php bin/magento setup:di:compile</em> </li>
+	<li> In CLI, run the Magento Static Content deployment: <br/> <em>php bin/magento setup:static-content:deploy</em> </li>
+	<li> Login to Magento Admin and navigate to System/Cache Management </li>
+	<li> Flush the cache storage by selecting Flush Cache Storage </li>
+</ol>
 
-## Technical feature
+<h2> 1.2   New Wzizpay Installation </h2>
+<p>This section outlines the steps to install the Wzizpay plugin for the first time.</p>
 
-### Module configuration
-1. Package details [composer.json](composer.json).
-2. Module configuration details (sequence) in [module.xml](etc/module.xml).
-3. Module configuration available through Stores->Configuration [system.xml](etc/adminhtml/system.xml)
+<p> Note: [MAGENTO] refers to the root folder where Magento is installed. </p>
 
-Payment gateway module depends on `Sales`, `Payment` and `Checkout` Magento modules.
-For more module configuration details, please look through [module development docs](http://devdocs.magento.com/guides/v2.0/extension-dev-guide/module-load-order.html).
+<ol>
+	<li> Download the Magento-Wzizpay plugin - Available as a .zip or tar.gz file from the Wzizpay GitHub directory. </li>
+	<li> Unzip the file </li>
+	<li> Create directory Wzizpay/Wzizpay in: <br/> <em>[MAGENTO]/app/code/</em></li>
+	<li> Copy the files to <em>'Wzizpay/Wzizpay'</em> folder </li>
+	<li> Open Command Line Interface </li>
+	<li> In CLI, run the below command to enable Wzizpay module: <br/> <em>php bin/magento module:enable Wzizpay_Wzizpay</em> </li>
+	<li> In CLI, run the Magento setup upgrade: <br/> <em>php bin/magento setup:upgrade</em> </li>
+	<li> In CLI, run the Magento Dependencies Injection Compile: <br/> <em>php bin/magento setup:di:compile</em> </li>
+	<li> In CLI, run the Magento Static Content deployment: <br/> <em>php bin/magento setup:static-content:deploy</em> </li>
+	<li> Login to Magento Admin and navigate to System/Cache Management </li>
+	<li> Flush the cache storage by selecting Flush Cache Storage </li>
+</ol>
 
-### Gateway configuration
-On the next step, we might specify gateway domain configuration in [config.xml](etc/config.xml).
+<h2> 1.3	Wzizpay Merchant Setup </h2>
+<p> Complete the below steps to configure the merchant’s Wzizpay Merchant Credentials in Magento Admin. </p>
+<p> Note: Prerequisite for this section is to obtain an Wzizpay Merchant ID and Secret Key from Wzizpay. </p>
 
-##### Let's look into configuration attributes:
- * <code>debug</code> enables debug mode by default, e.g log for request/response
- * <code>active</code> is payment active by default
- * <code>model</code> `Payment Method Facade` used for integration with `Sales` and `Checkout` modules
- * <code>merchant_gateway_key</code> encrypted merchant credential
- * <code>order_status</code> default order status
- * <code>payment_action</code> default action of payment
- * <code>title</code> default title for a payment method
- * <code>currency</code> supported currency
- * <code>can_authorize</code> whether payment method supports authorization
- * <code>can_capture</code> whether payment method supports capture
- * <code>can_void</code> whether payment method supports void
- * <code>can_use_checkout</code> checkout availability
- * <code>is_gateway</code> is an integration with gateway
- * <code>sort_order</code> payment method order position on checkout/system configuration pages
- * <code>debugReplaceKeys</code> request/response fields, which will be masked in log
- * <code>paymentInfoKeys</code> transaction request/response fields displayed on payment information block
- * <code>privateInfoKeys</code> paymentInfoKeys fields which should not be displayed in customer payment information block
+<ol>
+	<li> Navigate to <em>Magento Admin/Stores/Configuration/Sales/Payment Methods/Wzizpay</em> </li>
+	<li> Enter the <em>Merchant ID</em> and <em>Merchant Key</em>. </li>
+	<li> Enable Wzizpay plugin using the <em>Enabled</em> checkbox. </li>
+	<li> Configure the Wzizpay API Mode (<em>Sandbox Mode</em> for testing on a staging instance and <em>Production Mode</em> for a live website and legitimate transactions). </li>
+	<li> Save the configuration. </li>
+	<li> Click the <em>Update Limits</em> button to retrieve the Minimum and Maximum Wzizpay Order values.</li>
+</ol>
 
-### Dependency Injection configuration
-> To get more details about dependency injection configuration in Magento 2, please see [DI docs](http://devdocs.magento.com/guides/v2.0/extension-dev-guide/depend-inj.html).
+<h2> 1.4	Upgrade Of Wzizpay Installation using Composer</h2>
+<p> This section outlines the steps to upgrade the currently installed Wzizpay plugin version using composer. </p>
+<p> Notes: </p>
+<p>Prerequisite for this section is that the module should be installed using composer. Please see section 1.1 for guidelines to install Wzizpay module using composer.</p>
+<p>[MAGENTO] refers to the root folder where Magento is installed. </p>
 
-In a case of Payment Gateway, DI configuration is used to define pools of `Gateway Commands` with related infrastructure and to configure `Payment Method Facade` (used by `Sales` and `Checkout` modules to perform commands)
+<ol>
+	<li> Open Command Line Interface and navigate to the Magento directory on your server</li>
+	<li> In CLI, run the below command to update Wzizpay module: <br/> <em>composer update Wzizpay-global/module-Wzizpay</em> </li>
+	<li> Make sure that Composer finished the update without errors </li>
+	<li> In CLI, run the Magento setup upgrade: <br/> <em>php bin/magento setup:upgrade</em> </li>
+	<li> In CLI, run the Magento Dependencies Injection Compile: <br/> <em>php bin/magento setup:di:compile</em> </li>
+	<li> In CLI, run the Magento Static Content deployment: <br/> <em>php bin/magento setup:static-content:deploy</em> </li>
+	<li> Login to Magento Admin and navigate to System/Cache Management </li>
+	<li> Flush the cache storage by selecting Flush Cache Storage </li>
+</ol>
 
-Payment Method Facade configuration:
-```xml
-<!-- Payment Method Facade configuration -->
-<virtualType name="SamplePaymentGatewayFacade" type="Magento\Payment\Model\Method\Adapter">
-    <arguments>
-        <argument name="code" xsi:type="const">\Magento\SamplePaymentGateway\Model\Ui\ConfigProvider::CODE</argument>
-        <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
-        <argument name="infoBlockType" xsi:type="string">Magento\SamplePaymentGateway\Block\Info</argument>
-        <argument name="valueHandlerPool" xsi:type="object">SamplePaymentGatewayValueHandlerPool</argument>
-        <argument name="commandPool" xsi:type="object">SamplePaymentGatewayCommandPool</argument>
-    </arguments>
-</virtualType>
-```
- * <code>code</code> Payment Method code
- * <code>formBlockType</code> Block class name, responsible for Payment Gateway Form rendering on a checkout.
-  Since Opepage Checkout uses knockout.js for rendering, this renderer is used only during Checkout process from Admin panel.
- * <code>infoBlockType</code> Block class name, responsible for Transaction/Payment Information details rendering in Order block.
- * <code>valueHandlerPool</code> Value handler pool used for queries to configuration
- * <code>commandPool</code> Pool of Payment Gateway commands
+<h2> 1.5	Upgrade Of Wzizpay Installation </h2>
+<p> This section outlines the steps to upgrade the currently installed Wzizpay plugin version. </p>
+<p> The process of upgrading the Wzizpay plugin version involves the complete removal of Wzizpay plugin files. </p>
+<p> Note: [MAGENTO] refers to the root folder where Magento is installed. </p>
 
-
-#### Pools
-> ! All `Payment\Gateway` provided pools implementations use lazy loading for components, i.e configured with component type name instead of component object
-
-##### Value Handlers
-There should be at least one Value Handler with `default` key provided for ValueHandlerPool.
-
-```xml
-!-- Value handlers infrastructure -->
-<virtualType name="SamplePaymentGatewayValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
-    <arguments>
-        <argument name="handlers" xsi:type="array">
-            <item name="default" xsi:type="string">SamplePaymentGatewayConfigValueHandler</item>
-        </argument>
-    </arguments>
-</virtualType>
-<virtualType name="SamplePaymentGatewayConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
-    <arguments>
-        <argument name="configInterface" xsi:type="object">SamplePaymentGatewayConfig</argument>
-    </arguments>
-</virtualType>
-```
-
-##### Commands
-All gateway commands should be added to CommandPool instance
-```xml
-<!-- Commands infrastructure -->
-<virtualType name="SamplePaymentGatewayCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
-    <arguments>
-        <argument name="commands" xsi:type="array">
-            <item name="authorize" xsi:type="string">SamplePaymentGatewayAuthorizeCommand</item>
-            <item name="capture" xsi:type="string">SamplePaymentGatewayCaptureCommand</item>
-            <item name="void" xsi:type="string">SamplePaymentGatewayVoidCommand</item>
-        </argument>
-    </arguments>
-</virtualType>
-```
-
-Example of Authorization command configuration:
-```xml
-<!-- Authorize command -->
-<virtualType name="SamplePaymentGatewayAuthorizeCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
-    <arguments>
-        <argument name="requestBuilder" xsi:type="object">SamplePaymentGatewayAuthorizationRequest</argument>
-        <argument name="handler" xsi:type="object">SamplePaymentGatewayResponseHandlerComposite</argument>
-        <argument name="transferFactory" xsi:type="object">Magento\SamplePaymentGateway\Gateway\Http\TransferFactory</argument>
-        <argument name="client" xsi:type="object">Magento\SamplePaymentGateway\Gateway\Http\Client\ClientMock</argument>
-    </arguments>
-</virtualType>
-
-<!-- Authorization Request -->
-<virtualType name="SamplePaymentGatewayAuthorizationRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
-    <arguments>
-        <argument name="builders" xsi:type="array">
-            <item name="transaction" xsi:type="string">Magento\SamplePaymentGateway\Gateway\Request\AuthorizationRequest</item>
-            <item name="mockData" xsi:type="string">Magento\SamplePaymentGateway\Gateway\Request\MockDataRequest</item>
-        </argument>
-    </arguments>
-</virtualType>
-<type name="Magento\SamplePaymentGateway\Gateway\Request\AuthorizationRequest">
-    <arguments>
-        <argument name="config" xsi:type="object">SamplePaymentGatewayConfig</argument>
-    </arguments>
-</type>
-
-<!-- Response handlers -->
-<virtualType name="SamplePaymentGatewayResponseHandlerComposite" type="Magento\Payment\Gateway\Response\HandlerChain">
-    <arguments>
-        <argument name="handlers" xsi:type="array">
-            <item name="txnid" xsi:type="string">Magento\SamplePaymentGateway\Gateway\Response\TxnIdHandler</item>
-            <item name="fraud" xsi:type="string">Magento\SamplePaymentGateway\Gateway\Response\FraudHandler</item>
-        </argument>
-    </arguments>
-</virtualType>
-```
-* `SamplePaymentGatewayAuthorizeCommand` - instance of GatewayCommand provided by `Payment\Gateway` configured with request builders, response handlers and transfer client
-* `SamplePaymentGatewayAuthorizationRequest` - Composite of request parts used for Authorization
-* `SamplePaymentGatewayResponseHandlerComposite` - Composite\List of response handlers.
-
-## Installation
-This module is intended to be installed using composer.  After including this component and enabling it, you can verify it is installed by going the backend at:
-STORES -> Configuration -> ADVANCED/Advanced ->  Disable Modules Output
-Once there check that the module name shows up in the list to confirm that it was installed correctly.
-
-## Tests
-Unit tests could be found in the [Test/Unit](Test/Unit) directory.
-
-## Contributors
-Magento Core team
-
-## License
-[Open Source License](LICENSE.txt)
+<ol>
+	<li> Remove Files in: <em>[MAGENTO]/app/code/Wzizpay/Wzizpay</em></li>
+	<li> Download the Magento-Wzizpay plugin - Available as a .zip or tar.gz file from the Wzizpay GitHub directory. </li>
+	<li> Unzip the file </li>
+	<li> Copy the files in folder to: <br/> <em>[MAGENTO]/app/code/Wzizpay/Wzizpay</em> </li>
+	<li> Open Command Line Interface </li>
+	<li> In CLI, run the below command to enable Wzizpay module: <br/> <em>php bin/magento module:enable Wzizpay_Wzizpay</em> </li>
+	<li> In CLI, run the Magento setup upgrade: <br/> <em>php bin/magento setup:upgrade</em> </li>
+	<li> In CLI, run the Magento Dependencies Injection Compile: <br/> <em>php bin/magento setup:di:compile</em> </li>
+	<li> In CLI, run the Magento Static Content deployment: <br/> <em>php bin/magento setup:static-content:deploy</em> </li>
+	<li> Login to Magento Admin and navigate to System/Cache Management </li>
+	<li> Flush the cache storage by selecting Flush Cache Storage </li>
+</ol>

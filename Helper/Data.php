@@ -724,7 +724,7 @@ class Data extends AbstractHelper
     private $wizpay_info_style_product_list = '';
     private $wizpay_info_style_product_detail = '';
     private $wizpay_info_logo_style = 'max-width: 100px; max-height: 30px; padding-top: 5px; border: none !important; vertical-align: bottom; display: inline-block;';
-    private $wizpay_info_content_style = '';
+    private $wizpay_info_content_style = 'line-height: 25px;';
     
 
 
@@ -743,8 +743,8 @@ class Data extends AbstractHelper
         $wizpay_minimum_payment_amount = $this->getConfig('payment/wizpay/min_max_wizpay/wz_min_amount');
         $wizpay_maxmum_payment_amount = $this->getConfig('payment/wizpay/min_max_wizpay/wz_max_amount');
 
-        $wizpay_merchant_min_amount =  $this->getConfig('payment/wizpay/min_max_wizpay/merchant_max_amount');
-        $wizpay_merchant_max_amount =  $this->getConfig('payment/wizpay/min_max_wizpay/merchant_min_amounts');
+        $wizpay_merchant_min_amount =  $this->getConfig('payment/wizpay/min_max_wizpay/merchant_min_amount');
+        $wizpay_merchant_max_amount =  $this->getConfig('payment/wizpay/min_max_wizpay/merchant_max_amount');
 
 
         if (empty($wizpay_merchant_min_amount) || empty($wizpay_merchant_max_amount))
@@ -781,7 +781,7 @@ class Data extends AbstractHelper
                     // display full info
                     return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
                         <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
-                        <span style="'. $this->wizpay_info_content_style .'">or 4 payments '. $sub_amount .' of ' . $total_amount . 
+                        <span style="'. $this->wizpay_info_content_style .'">or 4 payments '. $sub_amount .
                         ' with Wizpay <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
                 }
                 
@@ -789,7 +789,7 @@ class Data extends AbstractHelper
             else if($type == 'Cart' && intval( $show_on_cat_page, 0) == 1){
                 return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
                         <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
-                        <span style="'. $this->wizpay_info_content_style .'">or 4 payments '. $sub_amount .' of ' . $total_amount . ' with Wizpay (without shipping fee). 
+                        <span style="'. $this->wizpay_info_content_style .'">or 4 payments '. $sub_amount .' with Wizpay. 
                         <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
             }            
         }
