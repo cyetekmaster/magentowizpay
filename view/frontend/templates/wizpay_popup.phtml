@@ -1,0 +1,50 @@
+
+<style>
+.wizpay-popup-body-content iframe{
+    width: 100%;
+    min-height: 920px;
+}
+
+</style>
+
+
+
+<div id="wizpay-modal-content">
+    <div class="modal-body-content wizpay-popup-body-content">
+        <iframe id="wizpay-popup-iframe" title="Terms and Conditions">
+        </iframe>
+    </div>    
+</div>
+
+
+
+<script type="text/javascript">
+    require([
+        "jquery",
+        "Magento_Ui/js/modal/modal"
+    ],function($, modal) {
+        var options = {
+            type: 'popup',
+            responsive: true,
+            title: 'Terms and Conditions',
+            buttons: [{
+                text: $.mage.__('Close'),
+                class: '',
+                click: function () {
+                    // unload iframe
+                    document.getElementById('wizpay-popup-iframe').setAttribute("src","");
+                    // close modal
+                    this.closeModal();
+                }
+            }]
+        };
+
+        var popup = modal(options, $('#wizpay-modal-content'));
+        $(".wizpay-learn-more-popup-link").click(function() {
+            // set iframe url
+            document.getElementById('wizpay-popup-iframe').setAttribute("src","https://info.wizpay.com.au/HowItWorks/HowItWorks.html");
+            // load modal
+            $('#wizpay-modal-content').modal('openModal');
+        });
+    });
+</script>

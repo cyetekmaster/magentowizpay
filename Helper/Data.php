@@ -2,6 +2,8 @@
 
 namespace Wizpay\Wizpay\Helper;
 
+require_once('access.php');
+
 use \Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\ObjectManagerInterface;
@@ -9,13 +11,15 @@ use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Locale\ResolverInterface;
 use Magento\Payment\Helper\Data as PaymentData;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Zend\Log\Writer\Stream;
-use Zend\Log\Logger;
 use Magento\Framework\Mail\Template\TransportBuilder;
 use Magento\Framework\Mail\TransportInterfaceFactory;
 
+
+
+
 class Data extends AbstractHelper
 {
+    protected $logger;
 
     /**
      * @var \Magento\Framework\ObjectManagerInterface
@@ -40,6 +44,8 @@ class Data extends AbstractHelper
 
     protected $curlClient;
 
+    private $wizpay_url_manager;
+
     /**
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \Magento\Framework\App\Helper\Context $context
@@ -55,7 +61,8 @@ class Data extends AbstractHelper
         ResolverInterface $localeResolver,
         TransportBuilder $transportBuilder,
         TransportInterfaceFactory $mailTransportFactory,
-        \Magento\Framework\HTTP\Client\Curl $curl
+        \Magento\Framework\HTTP\Client\Curl $curl,
+        \Psr\Log\LoggerInterface $logger
     ) {
         //$this->_gatewayConfig = $gatewayConfig;
         $this->_objectManager = $objectManager;
@@ -67,15 +74,22 @@ class Data extends AbstractHelper
         $this->mailTransportFactory = $mailTransportFactory;
         $this->_scopeConfig   = $context->getScopeConfig();
 
+        $this->logger = $logger;
+
+        $this->wizpay_url_manager = new WizpayUrlAccessManager();
+
         parent::__construct($context);
     }
 
     public function initiateWizpayLogger($log)
     {
-        $writer = new Stream(BP . '/var/log/wizpay'.date("Y-m-d").'.log');
-        $logger = new Logger();
-        $logger->addWriter($writer);
-        $logger->info($log);
+        $enable_debug = $this->getConfig('payment/wizpay/debug');
+
+        if(intval($enable_debug, 0) == 1 ){
+            $this->logger->info($log);
+        }
+
+        
     }
 
     public function createWcog($apiresult)
@@ -106,7 +120,22 @@ class Data extends AbstractHelper
     public function getConfig($config_path)
     {
 
-        return $this->scopeConfig->getValue($config_path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $setting = $this->scopeConfig->getValue($config_path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+
+        // if try to get api key then check environment
+        if($config_path == 'payment/wizpay/api_key'){
+            $environment = $this->scopeConfig->getValue('payment/wizpay/environment', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+            if( $environment == 1){
+                $setting = $this->scopeConfig->getValue('payment/wizpay/api_key_sandbox', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+                $this->initiateWizpayLogger('We are using sandbox api_key: ' . $setting);
+            }else{
+                $this->initiateWizpayLogger('We are using live api_key: ' . $setting);
+            }
+        }
+
+        return $setting;
     }
 
     public function transaction()
@@ -155,16 +184,17 @@ class Data extends AbstractHelper
     
     //  return 'https://uatapi.wizardpay.com.au/v1/api/';
     // }
-    private function apiUrl()
-    {
-        $this->base = 'https://devapi.wizpay.com.au/';
-      //  $this->base = 'https://stagingapi.wizpay.com.au/';
-        // $this->base = 'https://uatapi.wizardpay.com.au/';
-        $this->version = 'v1/';
-        $this->intermediate = 'api/';
-        $this->apicall = '';
-        $apiurl = $this->base . $this->version . $this->intermediate;
-        return $apiurl;
+    private function apiUrl($environment = '')
+    {        
+        if($environment == ''){
+            // get from setting
+            $environment = $this->getConfig('payment/wizpay/environment');
+        }
+        
+
+        $this->initiateWizpayLogger('We are using environment: 1-> Sandbox, 0-> Live: ' . $environment);
+
+        return $this->wizpay_url_manager->GetApiUrl($environment);
     }
 
     public function getCurlClient()
@@ -242,14 +272,15 @@ class Data extends AbstractHelper
         }
     }
 
-    public function callLimitapi($apikey)
+    public function callLimitapi($apikey, $environment)
     {
         $error = false;
         $actualapicall = 'GetPurchaseLimit';
-        $finalapiurl = $this->apiUrl() . $actualapicall;
+        $finalapiurl = $this->apiUrl($environment) . $actualapicall;
         //$finalapiurl = 'http://mywp.preyansh.in/wzapi.php';
         $apiresult = $this->getWizpayapi($finalapiurl, $apikey);
         $this->initiateWizpayLogger('callLimitapi() function called'.PHP_EOL);
+        $this->initiateWizpayLogger('GetLimitApiResult:'. print_r ($apiresult));
         // echo $finalapiurl;
         // echo "<Pre>";
         // print_r($apiresult);
@@ -688,4 +719,109 @@ class Data extends AbstractHelper
         }
         return $errormessage;
     }
+
+    private $wizpay_info_style_oneline = 'display: block; padding-top: 5px; padding-bottom: 5px;';
+    private $wizpay_info_style_product_list = '';
+    private $wizpay_info_style_product_detail = '';
+    private $wizpay_info_logo_style = 'max-width: 100px; max-height: 30px; padding-top: 5px; border: none !important; vertical-align: bottom; display: inline-block;';
+    private $wizpay_info_content_style = 'line-height: 25px;';
+    
+
+
+
+    public function getWizpayMessage($type, $price, $assetRepository, $min_price = 0, $max_price = 99999){
+        $banktransferLogoUrl = $assetRepository->getUrlWithParams('Wizpay_Wizpay::images/Group.png', []);
+
+               
+        // get plugin setting
+        $wizpay_is_enable = $this->getConfig('payment/wizpay/active');
+        // get page setting
+        $show_on_product_cat_page = $this->getConfig('payment/wizpay/website_customisation/payment_info_on_catetory_pages');
+        $show_on_product_page = $this->getConfig('payment/wizpay/website_customisation/payment_info_on_product_pages');
+        $show_on_cat_page = $this->getConfig('payment/wizpay/website_customisation/payment_info_on_cart_pages');
+        // get limit
+        $wizpay_minimum_payment_amount = $this->getConfig('payment/wizpay/min_max_wizpay/wz_min_amount');
+        $wizpay_maxmum_payment_amount = $this->getConfig('payment/wizpay/min_max_wizpay/wz_max_amount');
+
+        $wizpay_merchant_min_amount =  $this->getConfig('payment/wizpay/min_max_wizpay/merchant_min_amount');
+        $wizpay_merchant_max_amount =  $this->getConfig('payment/wizpay/min_max_wizpay/merchant_max_amount');
+
+
+        if (empty($wizpay_merchant_min_amount) || empty($wizpay_merchant_max_amount))
+        {
+
+            $wizpay_merchant_min_amount = $wizpay_minimum_payment_amount;
+            $wizpay_merchant_max_amount = $wizpay_maxmum_payment_amount;
+        }
+
+
+        if(intval($wizpay_is_enable, 0) == 1 
+           && (
+                (floatval($wizpay_merchant_min_amount) <= $price && $price <=  floatval($wizpay_merchant_max_amount))
+                ||
+                ( $min_price > 0 && $max_price < 99999
+                    && floatval($wizpay_merchant_min_amount) <= $min_price && $max_price <= floatval($wizpay_merchant_max_amount))
+           )){
+
+
+            $total_amount = '$' . number_format($price, 2, '.', ','); 
+            $sub_amount = '$' . number_format($price / 4, 2, '.', ',');
+
+
+            if($type == 'List' && intval( $show_on_product_cat_page, 0) == 1){
+                return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_list .'">
+                                    <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /></div>';
+            }
+            else if($type == 'Detail' && intval( $show_on_product_page, 0) == 1){
+                if($min_price > 0 && $max_price < 99999){
+                    // display icon only
+                    return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_list .'">
+                                    <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /></div>';
+                }else{
+                    // display full info
+                    return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
+                        <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
+                        <span style="'. $this->wizpay_info_content_style .'">or 4 payments '. $sub_amount .
+                        ' with Wizpay <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
+                }
+                
+            }
+            else if($type == 'Cart' && intval( $show_on_cat_page, 0) == 1){
+                return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
+                        <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
+                        <span style="'. $this->wizpay_info_content_style .'">or 4 payments '. $sub_amount .' with Wizpay. 
+                        <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
+            }            
+        }
+        else if(intval($wizpay_is_enable, 0) == 1 ){
+            // out of range
+            if($type == 'Detail' && intval( $show_on_product_page, 0) == 1){
+                if($min_price > 0 && $max_price < 99999){
+                    // display icon only
+                    return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_list .'">
+                                    <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /></div>';
+                }else{
+                    // display full info
+                    return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
+                        <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
+                        <span style="'. $this->wizpay_info_content_style .'"> is available on purchases between '
+                        . '$' . number_format(floatval($wizpay_merchant_min_amount), 2, '.', ',') .' and ' 
+                        . '$' . number_format(floatval($wizpay_merchant_max_amount), 2, '.', ',') . 
+                        ' <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
+                }
+                
+            }
+            else if($type == 'Cart' && intval( $show_on_cat_page, 0) == 1){
+                return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
+                        <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
+                        <span style="'. $this->wizpay_info_content_style .'"> is available on purchases between '
+                        . '$' . number_format(floatval($wizpay_merchant_min_amount), 2, '.', ',') .' and ' 
+                        . '$' . number_format(floatval($wizpay_merchant_max_amount), 2, '.', ',') . 
+                        '<a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
+            } 
+        }
+
+        return '';
+    }
+
 }

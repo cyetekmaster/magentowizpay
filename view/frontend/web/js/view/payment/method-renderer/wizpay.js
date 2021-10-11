@@ -24,10 +24,10 @@ define(
                 template: 'Wizpay_Wizpay/payment/form',
             },
 
-            
+
             redirectAfterPlaceOrder: false,
 
-            getCode: function() {
+            getCode: function () {
                 return 'wizpay';
             },
 
@@ -40,32 +40,32 @@ define(
 
             totalamount: function () {
                 var price = quote.getTotals()().base_grand_total;
-                return price;
+                return price.toFixed(2);
             },
 
             installment: function () {
                 var price = quote.getTotals()().base_grand_total;
-                var formatedprice = price/4;
+                var formatedprice = price / 4;
                 return formatedprice.toFixed(2);
             },
-            
+
             getStoreCurrency: function () {
                 return window.checkoutConfig.payment.wizpay.getStoreCurrency;
-                 
+
             },
 
             afterPlaceOrder: function () {
-              window.location.replace(url.build('wizpay/index'));
+                window.location.replace(url.build('wizpay/index'));
             },
 
-            context: function() {
+            context: function () {
                 return this;
             },
 
-            isActive: function() {
+            isActive: function () {
                 return true;
             },
-            
+
             popimage: function () {
                 return window.checkoutConfig.payment.wizpay.popimage;
             },
@@ -80,8 +80,8 @@ define(
                     clickableOverlay: true,
                     heightStyle: "content"
                 };
-                modal(couponcodepopup, $('#popup-modal')); 
-                $(".wz-custom-modal header.modal-header").appendTo("div#popup-modal");           
+                modal(couponcodepopup, $('#popup-modal'));
+                $(".wz-custom-modal header.modal-header").appendTo("div#popup-modal");
                 $('#popup-modal').modal('openModal');
             }
         });
