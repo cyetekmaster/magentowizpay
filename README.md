@@ -3,7 +3,7 @@
 
 <ol>
 	<li> Open Command Line Interface and navigate to the Magento directory on your server</li>
-	<li> In CLI, run the below command to install Wzizpay module: <br/> <em>composer require wizpay/wizpay</em> </li>
+	<li> In CLI, run the below command to install Wzizpay module: <br/> <em>composer require Wizpay/Wizpay</em> </li>
 	<li> At the Composer request, enter your Magento marketplace credentials (public key - username, private key - password)</li>
 	<li> Make sure that Composer finished the installation without errors </li>
 	<li> In CLI, run the Magento setup upgrade: <br/> <em>php bin/magento setup:upgrade</em> </li>
