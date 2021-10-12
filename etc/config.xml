@@ -31,8 +31,8 @@
                 <can_capture_vault>1</can_capture_vault>
                 <website_customisation>
                     <payment_info_on_product_pages>1</payment_info_on_product_pages>
-                    <payment_info_on_cart_pages>1</payment_info_on_cart_pages>
-                    <payment_info_on_catetory_pages>1</payment_info_on_catetory_pages>
+                    <payment_info_on_cart_pages>0</payment_info_on_cart_pages>
+                    <payment_info_on_catetory_pages>0</payment_info_on_catetory_pages>
                 </website_customisation>
             </wizpay>
         </payment>
