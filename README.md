@@ -6,9 +6,9 @@
 	<li> In CLI, run the below command to install Wizpay module: <br/> <em>composer require Wizpay/Wizpay</em> </li>
 	<li> At the Composer request, enter your Magento marketplace credentials (public key - username, private key - password)</li>
 	<li> Make sure that Composer finished the installation without errors </li>
-	<li> In CLI, run the Magento setup upgrade: <br/> <em>php bin/magento setup:upgrade</em> </li>
-	<li> In CLI, run the Magento Dependencies Injection Compile: <br/> <em>php bin/magento setup:di:compile</em> </li>
-	<li> In CLI, run the Magento Static Content deployment: <br/> <em>php bin/magento setup:static-content:deploy</em> </li>
+	<li> In CLI, run the Magento setup upgrade: <br/> <em>sudo php bin/magento setup:upgrade</em> </li>
+	<li> In CLI, run the Magento Dependencies Injection Compile: <br/> <em>sudo php bin/magento setup:di:compile</em> </li>
+	<li> In CLI, run the Magento Static Content deployment: <br/> <em>sudo php bin/magento setup:static-content:deploy -f</em> </li>
 	<li> Login to Magento Admin and navigate to System/Cache Management </li>
 	<li> Flush the cache storage by selecting Flush Cache Storage </li>
 </ol>
