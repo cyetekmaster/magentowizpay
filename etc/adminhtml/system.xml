@@ -6,7 +6,8 @@
 
             <group id="wizpay" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>
-                    <![CDATA[<img class="brand-logo" style="margin: 1px 19px -6px;" src="https://creditcorp2.nicer8.com/wp-content/uploads/2021/04/WizPay_Horiz_RGB-1.png" width="100px"/>]]>
+                    <![CDATA[<img class="brand-logo" style="margin: 1px 19px -6px;" src="https://creditcorp2.nicer8.com/wp-content/uploads/2021/04/WizPay_Horiz_RGB-1.png" width="100px"/> <br /> &nbsp; &nbsp; <span style="font-size: 10px;font-style: italic;">App Version: 1.0</span>]]>
+
                 </label>
                 <field id="gateway_logo" translate="label" type="image" sortOrder="40" showInDefault="0" showInWebsite="0" showInStore="0">
                     <backend_model>Magento\Config\Model\Config\Backend\Image</backend_model>
@@ -129,6 +130,7 @@
                        <backend_model>Wizpay\Wizpay\Model\Config\Backend\FieldValidation</backend_model>
                     </field>
                 </group>  
+
             </group>
         </section>
     </system>
