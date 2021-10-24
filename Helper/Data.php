@@ -81,6 +81,11 @@ class Data extends AbstractHelper
         parent::__construct($context);
     }
 
+
+    public function getPluginVersion(){
+        return '1.0';
+    }
+
     public function initiateWizpayLogger($log)
     {
         $enable_debug = $this->getConfig('payment/wizpay/debug');
@@ -350,6 +355,23 @@ class Data extends AbstractHelper
             $apiresult = $errormessage;
             $this->initiateWizpayLogger('failure:'.$apiresult);
         }
+        return $apiresult;
+    }
+
+    public function callConfigurMerchantPlugin($apikey, $environment, $requestbody)
+    {
+        $error = false;
+        $actualapicall = 'ConfigurMerchantPlugin';
+        $finalapiurl = $this->apiUrl($environment) . $actualapicall;
+        //$finalapiurl = 'http://mywp.preyansh.in/wzapi.php';
+        
+        $this->initiateWizpayLogger('callConfigurMerchantPlugin() function call to URI: ' . $finalapiurl . PHP_EOL);
+        $this->initiateWizpayLogger('callConfigurMerchantPlugin() function call Request: ' . json_encode($requestbody) . PHP_EOL);
+        $apiresult = $this->postWizpayapi($finalapiurl, $requestbody, $apikey);
+        $this->initiateWizpayLogger('callConfigurMerchantPlugin() function call Response: ' . json_encode($apiresult) . PHP_EOL);
+        $this->initiateWizpayLogger('callConfigurMerchantPlugin() function called'.PHP_EOL);
+        $this->createWcog($apiresult);
+
         return $apiresult;
     }
 
@@ -781,7 +803,7 @@ class Data extends AbstractHelper
                     // display full info
                     return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
                         <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
-                        <span style="'. $this->wizpay_info_content_style .'">or 4 payments '. $sub_amount .
+                        <span style="'. $this->wizpay_info_content_style .'">or 4 payments of '. $sub_amount .
                         ' with Wizpay <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
                 }
                 
@@ -789,7 +811,7 @@ class Data extends AbstractHelper
             else if($type == 'Cart' && intval( $show_on_cat_page, 0) == 1){
                 return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
                         <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
-                        <span style="'. $this->wizpay_info_content_style .'">or 4 payments '. $sub_amount .' with Wizpay. 
+                        <span style="'. $this->wizpay_info_content_style .'">or 4 payments of '. $sub_amount .' with Wizpay. 
                         <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
             }            
         }

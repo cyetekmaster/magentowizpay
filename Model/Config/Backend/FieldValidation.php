@@ -14,6 +14,7 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
      */
     protected $request;
     protected $_configValueFactory;
+    protected $_storeManager;
     /**
      * @var \Magento\Config\Model\ResourceModel\Config
      */
@@ -43,6 +44,7 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
         \Magento\Framework\App\Filesystem\DirectoryList $dir,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
         RequestInterface $request,
         Data $helper,
         array $data = []
@@ -53,6 +55,7 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
         $this->resourceConfig = $resourceConfig;
         $this->dir = $dir;
         $this->_configInterface = $configInterface;
+        $this->_storeManager = $storeManager;
         parent::__construct($context, $registry, $config, $cacheTypeList, $resource, $resourceCollection, $data);
     }
 
@@ -65,6 +68,9 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
         $allpostdata = (array) $postData;
         // print_r($allpostdata);
         $getallpostdata = $allpostdata['groups']['wizpay']['groups']['min_max_wizpay']['fields'];
+
+        $mmin = 0;
+        $mmax = 0;
         
         if (isset($getallpostdata['merchant_min_amount']['value'])) {
             $mmin = trim($getallpostdata['merchant_min_amount']['value']);
@@ -202,5 +208,26 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
                 );
             }
         }
+
+
+
+        // notice api site the setting has been changed.
+        // build data
+        $plugin_config_api_data = [
+            'merchantUrl' => $this->_storeManager->getStore()->getBaseUrl() ,
+            'maxMerchantLimit' =>  $mmax,
+            'minMerchantLimit' => $mmin,
+            'isEnable' =>  intval($allpostdata['groups']['wizpay']['fields']['active']['value']) == 1 ? true : false,
+            'isEnableProduct' => intval($allpostdata['groups']['wizpay']['groups']['website_customisation']['fields']['payment_info_on_product_pages']['value']) == 1 ? true : false,
+            'isEnableCategory' => intval($allpostdata['groups']['wizpay']['groups']['website_customisation']['fields']['payment_info_on_catetory_pages']['value']) == 1 ? true : false,
+            'isEnableCart' => intval($allpostdata['groups']['wizpay']['groups']['website_customisation']['fields']['payment_info_on_cart_pages']['value']) == 1 ? true : false,
+            'isInstalled' => true,
+            'pluginversion' => $this->helper->getPluginVersion(),
+            'platformversion' => '2.0',
+            'apikey' => $get_api_key,
+            'platform' => '2.0Dev'
+        ];
+
+        $plugin_config_api_response  = $this->helper->callConfigurMerchantPlugin($get_api_key,$environment, $plugin_config_api_data);
     }
 }
