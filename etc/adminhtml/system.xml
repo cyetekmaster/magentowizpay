@@ -18,7 +18,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <field id="capture" translate="label" type="select" sortOrder="2" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="capture" translate="label" type="select" sortOrder="2" showInDefault="0" showInWebsite="0" showInStore="0">
                     <label>Capture</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Whether or not to immediately capture the charge. When unchecked, the charge issues an authorization and will need to be captured later.</comment>
