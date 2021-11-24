@@ -18,6 +18,29 @@ use Magento\Framework\Mail\TransportInterfaceFactory;
 
 class Data extends AbstractHelper
 {
+
+    /**
+     * Base API URL setting
+     * 
+     */
+    private  $base_url = 'https://api.wizpay.com.au/';
+    private  $test_url = 'https://stagingapi.wizpay.com.au/';
+    private  $version = 'v1/';
+    private  $intermediate = 'api/';
+    private  $apicall = '';
+
+
+    private function GetApiUrl($environment){
+        if($environment == 1){
+            return $this->test_url . $this->version . $this->intermediate;
+        }else{
+            return $this->base_url . $this->version . $this->intermediate;   
+        }
+    } 
+
+
+
+
     protected $logger;
 
     /**
@@ -43,7 +66,6 @@ class Data extends AbstractHelper
 
     protected $curlClient;
 
-    private $wizpay_url_manager;
 
     /**
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
@@ -75,8 +97,6 @@ class Data extends AbstractHelper
 
         $this->logger = $logger;
 
-        $this->wizpay_url_manager = new WizpayUrlAccessManager();
-
         parent::__construct($context);
     }
 
@@ -99,18 +119,19 @@ class Data extends AbstractHelper
     public function createWcog($apiresult)
     {
         $capture = $this->getConfig('payment/wizpay/capture');
-        $getAmount = @$apiresult['originalAmount']; // phpcs:ignore
-        $amount = @$getAmount['amount']; // phpcs:ignore
+        $getAmount = $this->getDataFromJsonObj('originalAmount', $apiresult); // phpcs:ignore
+        $amount = $this->getDataFromJsonObj('amount', $getAmount); // phpcs:ignore
         $logdata = ['CaptureSettings' =>$capture,
-            'merchantReference'     => @$apiresult['merchantReference'], // phpcs:ignore
-            'WZTransactionID'       => @$apiresult['transactionId'], // phpcs:ignore
-            'paymentDescription'    => @$apiresult['paymentDescription'], // phpcs:ignore
-            'responseCode'          => @$apiresult['responseCode'], // phpcs:ignore
-            'errorCode'             => @$apiresult['errorCode'], // phpcs:ignore
+            'merchantReference'     => $this->getDataFromJsonObj('merchantReference', $getAmount), // phpcs:ignore
+            'WZTransactionID'       => $this->getDataFromJsonObj('transactionId', $getAmount), // phpcs:ignore
+            'paymentDescription'    => $this->getDataFromJsonObj('paymentDescription', $getAmount), // phpcs:ignore
+            'responseCode'          => $this->getDataFromJsonObj('responseCode', $getAmount), // phpcs:ignore
+            'errorCode'             => $this->getDataFromJsonObj('errorCode', $getAmount), // phpcs:ignore
             'Amount'                => '$'. $amount,
-            'errorMessage'          => @$apiresult['errorMessage'], // phpcs:ignore
-            'transactionStatus'     => @$apiresult['transactionStatus'], // phpcs:ignore
-            'paymentStatus'         => @$apiresult['paymentStatus']]; // phpcs:ignore
+            'errorMessage'          => $this->getDataFromJsonObj('errorMessage', $getAmount), // phpcs:ignore
+            'transactionStatus'     => $this->getDataFromJsonObj('transactionStatus', $getAmount), // phpcs:ignore
+            'paymentStatus'         => $this->getDataFromJsonObj('paymentStatus', $getAmount)
+        ]; // phpcs:ignore
         
         $this->initiateWizpayLogger(json_encode($logdata));
     }
@@ -198,7 +219,7 @@ class Data extends AbstractHelper
 
         $this->initiateWizpayLogger('We are using environment: 1-> Sandbox, 0-> Live: ' . $environment);
 
-        return $this->wizpay_url_manager->GetApiUrl($environment);
+        return $this->GetApiUrl($environment);
     }
 
     public function getCurlClient()
@@ -688,7 +709,7 @@ class Data extends AbstractHelper
         $this->initiateWizpayLogger('Cancel api called' . PHP_EOL);
         $this->createWcog($apiresult);
 
-        if (false !== $apiresult && '200' == @$apiresult['responseCode']) { // phpcs:ignore
+        if (false !== $apiresult && '200' == $this->getDataFromJsonObj('responseCode', $apiresult)) { // phpcs:ignore
 
             $errormessage = '';
             $responseerror = $this->handleOrderVoidedApiError($apiresult, $errormessage);
@@ -701,20 +722,20 @@ class Data extends AbstractHelper
                 $this->initiateWizpayLogger('API return success' . PHP_EOL);
             }
 
-        } elseif ('412' == @$apiresult['responseCode']) { // phpcs:ignore
+        } elseif ('412' == $this->getDataFromJsonObj('responseCode', $apiresult)) { // phpcs:ignore
             $error = true;
             $errormessage = 'Cancel attempt failed because payment has already been captured for this order';
             $this->initiateWizpayLogger($errormessage);
             $apiresult = $errormessage;
 
-        } elseif ('402' == @$apiresult['responseCode']) { // phpcs:ignore
+        } elseif ('402' == $this->getDataFromJsonObj('responseCode', $apiresult)) { // phpcs:ignore
             $error = true;
-            $errormessage = 'Error: ' . @$apiresult['errorCode'] . ' - ' . @$apiresult['errorMessage'] . ' - ' . @$apiresult['paymentDescription']; // phpcs:ignore
+            $errormessage = 'Error: ' . $this->getDataFromJsonObj('errorCode', $apiresult) . ' - ' . $this->getDataFromJsonObj('errorMessage', $apiresult) . ' - ' . $this->getDataFromJsonObj('paymentDescription', $apiresult); // phpcs:ignore
             $this->initiateWizpayLogger($errormessage);
             $apiresult = $errormessage;
         } else {
             $error = true;
-            $errormessage = 'Error: ' . @$apiresult['errorCode'] . ' - ' . @$apiresult['errorMessage']; // phpcs:ignore
+            $errormessage = 'Error: ' . $this->getDataFromJsonObj('errorCode', $apiresult) . ' - ' . $this->getDataFromJsonObj('errorMessage', $apiresult); // phpcs:ignore
             $this->initiateWizpayLogger($errormessage);
             $apiresult = $errormessage;
         }
@@ -845,23 +866,14 @@ class Data extends AbstractHelper
         return '';
     }
 
-}
 
-
-
-class WizpayUrlAccessManager{
-    private  $base_url = 'https://api.wizpay.com.au/';
-    private  $test_url = 'https://stagingapi.wizpay.com.au/';
-    private  $version = 'v1/';
-    private  $intermediate = 'api/';
-    private  $apicall = '';
-
-
-    public function GetApiUrl($environment){
-        if($environment == 1){
-            return $this->test_url . $this->version . $this->intermediate;
-        }else{
-            return $this->base_url . $this->version . $this->intermediate;   
+    private function getDataFromJsonObj($key, $dataObj){
+        $value = null;
+        
+        if(isset($dataObj) && is_object($dataObj) && property_exists($dataObj, $key)){
+            $value = $dataObj->{$key};
         }
-    } 
+        
+        return $value;
+    }
 }
