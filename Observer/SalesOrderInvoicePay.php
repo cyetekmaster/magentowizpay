@@ -40,10 +40,10 @@ class SalesOrderInvoicePay implements ObserverInterface
         $order = $invoice->getOrder();
         $payment = $order->getPayment();
         $isOffline = $order->getPayment()->getMethodInstance()->isOffline();
-        $isOfflineCase = $postdata['invoice']['capture_case'];
-        if ($isOfflineCase == 'offline') {
-            return;
-        }
+        // $isOfflineCase = $postdata['invoice']['capture_case'];
+        // if ($isOfflineCase == 'offline') {
+        //     return;
+        // }
         
         if ($isOffline) {
             return;
@@ -67,7 +67,7 @@ class SalesOrderInvoicePay implements ObserverInterface
 
         $failed_url = $this->helper->getConfig('payment/wizpay/failed_url');
         $success_url = $this->helper->getConfig('payment/wizpay/success_url');
-        $capture_settings = $this->helper->getConfig('payment/wizpay/capture');
+        $capture_settings = '1';// $this->helper->getConfig('payment/wizpay/capture');
         $wzresponse = $this->helper->getOrderPaymentStatusApi($wz_api_key, $api_data);
 
         if (!is_array($wzresponse)) {

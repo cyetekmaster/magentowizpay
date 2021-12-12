@@ -118,7 +118,7 @@ class Data extends AbstractHelper
 
     public function createWcog($apiresult)
     {
-        $capture = $this->getConfig('payment/wizpay/capture');
+        $capture = '1';// $this->getConfig('payment/wizpay/capture');
         $getAmount = $this->getDataFromJsonObj('originalAmount', $apiresult); // phpcs:ignore
         $amount = $this->getDataFromJsonObj('amount', $getAmount); // phpcs:ignore
         $logdata = ['CaptureSettings' =>$capture,

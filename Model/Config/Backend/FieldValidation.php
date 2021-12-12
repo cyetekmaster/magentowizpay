@@ -66,6 +66,15 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
         //$get_api_key = $this->helper->getConfig('payment/wizpay/api_key');
         $postData = $this->request->getPost();
         $allpostdata = (array) $postData;
+
+        // check if turn off wizpay then do nothing 
+        $is_plugin_enable = intval($allpostdata['groups']['wizpay']['fields']['active']['value']) == 1 ? true : false;
+        if($is_plugin_enable == false){
+            return;
+        }
+
+
+        // keep working if wizpay turn on.
         // print_r($allpostdata);
         $getallpostdata = $allpostdata['groups']['wizpay']['groups']['min_max_wizpay']['fields'];
 

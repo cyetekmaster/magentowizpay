@@ -9,11 +9,11 @@
                     <![CDATA[<img class="brand-logo" style="margin: 1px 19px -6px;" src="https://creditcorp2.nicer8.com/wp-content/uploads/2021/04/WizPay_Horiz_RGB-1.png" width="100px"/> <br /> &nbsp; &nbsp; <span style="font-size: 10px;font-style: italic;">App Version: 1.0</span>]]>
 
                 </label>
-                <field id="gateway_logo" translate="label" type="image" sortOrder="40" showInDefault="0" showInWebsite="0" showInStore="0">
+                <field id="gateway_logo" translate="label" type="image" sortOrder="40" showInDefault="0" showInWebsite="0" showInStore="0" >
                     <backend_model>Magento\Config\Model\Config\Backend\Image</backend_model>
                     <frontend_model>Wizpay\Wizpay\Block\System\Config\Form\Field\Image</frontend_model>
                 </field>
-                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
@@ -46,6 +46,7 @@
                     <comment>Enter API key provided by Wizpay into the "Wizpay API key"</comment>
                     <depends> <!-- This field will only be visible if the field with the id A_UNIQUE_FIELD_ID is set to value 1 -->
                         <field id="environment">0</field>
+                        <field id="active">1</field>
                     </depends>
                 </field>
 
@@ -56,6 +57,7 @@
                     <comment>Enter Sandbox API key provided by Wizpay into the "Wizpay Sandbox API key"</comment>
                     <depends> <!-- This field will only be visible if the field with the id A_UNIQUE_FIELD_ID is set to value 1 -->
                         <field id="environment">1</field>
+                        <field id="active">1</field>
                     </depends>
                 </field>
                 
