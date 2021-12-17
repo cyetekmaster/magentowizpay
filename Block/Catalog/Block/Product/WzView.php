@@ -21,7 +21,7 @@ class WzView
 
 
 
-    private $displayBlocks = ['product.info.addtocart', 'customize.button'];
+    private $displayBlocks = ['product.info.addtocart', 'customize.button', 'product.info.addtocart.additional'];
 
 
 

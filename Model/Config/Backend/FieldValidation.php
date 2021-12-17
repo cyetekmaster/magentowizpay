@@ -67,8 +67,12 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
         $postData = $this->request->getPost();
         $allpostdata = (array) $postData;
 
-        // check if turn off wizpay then do nothing 
-        $is_plugin_enable = intval($allpostdata['groups']['wizpay']['fields']['active']['value']) == 1 ? true : false;
+        $is_plugin_enable = true;
+        if(array_key_exists('value', $allpostdata['groups']['wizpay']['fields']['active'])){
+            // check if turn off wizpay then do nothing 
+            $is_plugin_enable = intval($allpostdata['groups']['wizpay']['fields']['active']['value']) == 1 ? true : false;
+        }
+        
         if($is_plugin_enable == false){
             return;
         }
@@ -218,7 +222,18 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
             }
         }
 
-
+        $isEnableProduct = true;
+        if(array_key_exists('value', $allpostdata['groups']['wizpay']['groups']['website_customisation']['fields']['payment_info_on_product_pages'])){
+            $isEnableProduct = intval($allpostdata['groups']['wizpay']['groups']['website_customisation']['fields']['payment_info_on_product_pages']['value']) == 1 ? true : false;
+        }
+        $isEnableCategory = false;
+        if(array_key_exists('value', $allpostdata['groups']['wizpay']['groups']['website_customisation']['fields']['payment_info_on_catetory_pages'])){
+            $isEnableCategory = intval($allpostdata['groups']['wizpay']['groups']['website_customisation']['fields']['payment_info_on_catetory_pages']['value']) == 1 ? true : false;
+        }
+        $isEnableCart = false;
+        if(array_key_exists('value', $allpostdata['groups']['wizpay']['groups']['website_customisation']['fields']['payment_info_on_cart_pages'])){
+            $isEnableCart = intval($allpostdata['groups']['wizpay']['groups']['website_customisation']['fields']['payment_info_on_cart_pages']['value']) == 1 ? true : false;
+        }
 
         // notice api site the setting has been changed.
         // build data
@@ -226,10 +241,10 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
             'merchantUrl' => $this->_storeManager->getStore()->getBaseUrl() ,
             'maxMerchantLimit' =>  $mmax,
             'minMerchantLimit' => $mmin,
-            'isEnable' =>  intval($allpostdata['groups']['wizpay']['fields']['active']['value']) == 1 ? true : false,
-            'isEnableProduct' => intval($allpostdata['groups']['wizpay']['groups']['website_customisation']['fields']['payment_info_on_product_pages']['value']) == 1 ? true : false,
-            'isEnableCategory' => intval($allpostdata['groups']['wizpay']['groups']['website_customisation']['fields']['payment_info_on_catetory_pages']['value']) == 1 ? true : false,
-            'isEnableCart' => intval($allpostdata['groups']['wizpay']['groups']['website_customisation']['fields']['payment_info_on_cart_pages']['value']) == 1 ? true : false,
+            'isEnable' =>  $is_plugin_enable,
+            'isEnableProduct' =>  $isEnableProduct,
+            'isEnableCategory' => $isEnableCategory,
+            'isEnableCart' => $isEnableCart,
             'isInstalled' => true,
             'pluginversion' => $this->helper->getPluginVersion(),
             'platformversion' => '2.0',
