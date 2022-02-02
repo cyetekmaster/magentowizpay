@@ -211,7 +211,7 @@ class Data extends AbstractHelper
     // }
     private function apiUrl($environment = '')
     {        
-        if($environment == ''){
+        if(!is_int($environment)){
             // get from setting
             $environment = $this->getConfig('payment/wizpay/environment');
         }
@@ -219,7 +219,7 @@ class Data extends AbstractHelper
 
         $this->initiateWizpayLogger('We are using environment: 1-> Sandbox, 0-> Live: ' . $environment);
 
-        return $this->GetApiUrl($environment);
+        return $this->GetApiUrl(intval($environment, 1));
     }
 
     public function getCurlClient()

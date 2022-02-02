@@ -169,6 +169,14 @@ class Index extends Action
                 $resultRedirect = $this->resultRedirectFactory->create();
                 //$redirectLink = $redirect_url;
                 $resultRedirect->setUrl($redirect_url);
+
+                // change order status to pending_payment
+                $modif_order = $objectManager->create('\Magento\Sales\Model\Order')->load($orderId); // phpcs:ignore
+                $modif_order_status = 'pending_payment';
+                $modif_order->setState($modif_order_status)->setStatus($modif_order_status);
+                $modif_order->save();
+
+                // return retirect url
                 return $resultRedirect;
             }
         } else {
