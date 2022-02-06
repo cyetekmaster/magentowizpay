@@ -1,7 +1,6 @@
 <?php
-/* File: app/code/Atwix/OrderFlow/Setup/InstallData.php */
 
-namespace Wizpay\Wizpay\Setup;
+namespace Wizpay\Wizpay\Setup\Patch\Data;
 
 use Exception;
 use Magento\Framework\Exception\AlreadyExistsException;
@@ -14,9 +13,9 @@ use Magento\Sales\Model\Order\StatusFactory;
 use Magento\Sales\Model\ResourceModel\Order\Status as StatusResource;
 use Magento\Sales\Model\ResourceModel\Order\StatusFactory as StatusResourceFactory;
 
-class InstallData implements InstallDataInterface
+class AdaptPayments implements \Magento\Framework\Setup\Patch\DataPatchInterface
 {
-
+    
     /**
      * Custom Order-State code
      */
@@ -46,6 +45,7 @@ class InstallData implements InstallDataInterface
      */
     protected $statusResourceFactory;
 
+
     /**
      * InstallData constructor
      *
@@ -60,30 +60,19 @@ class InstallData implements InstallDataInterface
         $this->statusResourceFactory = $statusResourceFactory;
     }
 
-    /**
-     * Installs data for a module
-     *
-     * @param ModuleDataSetupInterface $setup
-     * @param ModuleContextInterface $context
-     *
-     * @return void
-     *
-     * @throws Exception
-     */
-    public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
+    public function getAliases(): array
     {
-        $this->addNewOrderStateAndStatus();
+        return [];
     }
 
-    /**
-     * Create new custom order status and assign it to the new custom order state
-     *
-     * @return void
-     *
-     * @throws Exception
-     */
-    protected function addNewOrderStateAndStatus()
+    public static function getDependencies(): array
     {
+        return [];
+    }
+
+    public function apply(): self
+    {
+
         /** @var StatusResource $statusResource */
         $statusResource = $this->statusResourceFactory->create();
         /** @var Status $status */
@@ -95,11 +84,13 @@ class InstallData implements InstallDataInterface
 
         try {
             $statusResource->save($status);
+            $status->assignState(self::ORDER_STATE_CUSTOM_CODE, true, true);
         } catch (AlreadyExistsException $exception) {
 
-            return;
         }
 
-        $status->assignState(self::ORDER_STATE_CUSTOM_CODE, true, true);
+        
+
+        return $this;
     }
 }

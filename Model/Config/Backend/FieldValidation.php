@@ -249,7 +249,7 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
             'pluginversion' => $this->helper->getPluginVersion(),
             'platformversion' => '2.0',
             'apikey' => $get_api_key,
-            'platform' => '2.0Dev'
+            'platform' => 'Magento'
         ];
 
         $plugin_config_api_response  = $this->helper->callConfigurMerchantPlugin($get_api_key,$environment, $plugin_config_api_data);
