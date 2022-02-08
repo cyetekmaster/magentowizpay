@@ -6,7 +6,7 @@
 
             <group id="wizpay" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>
-                    <![CDATA[<img class="brand-logo" style="margin: 1px 19px -6px;" src="https://media.wizpay.com.au/media/c1bguefr/wizardpay-logo-md.png" width="100px"/> <br /> &nbsp; &nbsp; <span style="font-size: 10px;font-style: italic;">App Version: 1.0.4</span>]]>
+                    <![CDATA[<img class="brand-logo" style="margin: 1px 19px -6px;" src="https://media.wizpay.com.au/media/c1bguefr/wizardpay-logo-md.png" width="100px"/> <br /> &nbsp; &nbsp; <span style="font-size: 10px;font-style: italic;">App Version: 1.0.5</span>]]>
 
                 </label>
                 <field id="gateway_logo" translate="label" type="image" sortOrder="40" showInDefault="0" showInWebsite="0" showInStore="0" >
