@@ -235,7 +235,6 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
             $isEnableCart = intval($allpostdata['groups']['wizpay']['groups']['website_customisation']['fields']['payment_info_on_cart_pages']['value']) == 1 ? true : false;
         }
 
-        // notice api site the setting has been changed.
         // build data
         $plugin_config_api_data = [
             'merchantUrl' => $this->_storeManager->getStore()->getBaseUrl() ,
@@ -247,7 +246,7 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
             'isEnableCart' => $isEnableCart,
             'isInstalled' => true,
             'pluginversion' => $this->helper->getPluginVersion(),
-            'platformversion' => '2.0',
+            'platformversion' => $getMagentoVer,
             'apikey' => $get_api_key,
             'platform' => 'Magento'
         ];
