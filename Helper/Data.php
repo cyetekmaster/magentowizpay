@@ -31,7 +31,7 @@ class Data extends AbstractHelper
 
 
     private function GetApiUrl($environment){
-        if($environment == 1){
+        if($environment == 1 || $environment == ''){
             return $this->test_url . $this->version . $this->intermediate;
         }else{
             return $this->base_url . $this->version . $this->intermediate;   
@@ -211,7 +211,7 @@ class Data extends AbstractHelper
     // }
     private function apiUrl($environment = '')
     {        
-        if(!is_int($environment)){
+        if(!is_int($environment) || $environment == ''){
             // get from setting
             $environment = $this->getConfig('payment/wizpay/environment');
         }
@@ -219,7 +219,7 @@ class Data extends AbstractHelper
 
         $this->initiateWizpayLogger('We are using environment: 1-> Sandbox, 0-> Live: ' . $environment);
 
-        return $this->GetApiUrl(intval($environment, 1));
+        return $this->GetApiUrl(intval($environment));
     }
 
     public function getCurlClient()
@@ -340,9 +340,11 @@ class Data extends AbstractHelper
     {
         $error = false;
         $actualapicall = 'transactioncheckouts';
+        $this->initiateWizpayLogger('callCcheckoutsRredirectAapi() function call to get URI: ' . PHP_EOL);
         $finalapiurl = $this->apiUrl() . $actualapicall;
-        //$finalapiurl = 'http://mywp.preyansh.in/wzapi.php';
         
+        $this->initiateWizpayLogger('callCcheckoutsRredirectAapi() function call to URI: ' . $finalapiurl . PHP_EOL);
+        $this->initiateWizpayLogger('callCcheckoutsRredirectAapi() function call Request: ' . json_encode($requestbody) . PHP_EOL);
         $apiresult = $this->postWizpayapi($finalapiurl, $requestbody, $apikey);
 
         $this->initiateWizpayLogger('callCcheckoutsRredirectAapi() function called'.PHP_EOL);

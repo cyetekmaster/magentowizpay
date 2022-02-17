@@ -250,10 +250,15 @@ class Index extends Action
         foreach ($items as $item) {
 
             if ($item->getData()) {
+
+                $productId = $item->getProductId();
+                $product = $objectManager->create('Magento\Catalog\Model\Product')->load($productId);
+
                 $itemsdata[] = [
                     'name' => $item->getName(),
                     'sku' => $item->getSku(),
                     'quantity' => (int)$item->getQtyOrdered(),
+                    'ShippingRequired' => $product->getTypeId() != 'virtual' && $product->getTypeId() != 'downloadable',
                     'price' => [
                         'amount' => number_format($item->getPrice(), 2),
                         'currency' => $getStoreCurrency
