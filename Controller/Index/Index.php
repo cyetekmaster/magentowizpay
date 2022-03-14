@@ -7,9 +7,10 @@
  * @link
  */
 
-namespace Wizpay\Wizpay\Controller\Index;
+ namespace Wizpay\Wizpay\Controller\Index;
 
-class Index extends Action
+
+class Index implements \Magento\Framework\App\Action\HttpGetActionInterface
 {
     const CHECKOUT_STATUS_CANCELLED = 'CANCELLED';
     const CHECKOUT_STATUS_SUCCESS = 'SUCCESS';

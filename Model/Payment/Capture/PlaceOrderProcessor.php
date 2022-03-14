@@ -16,8 +16,8 @@ class PlaceOrderProcessor
 
     public function __construct(
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
-        \Wizpay\Wizpayy\Model\Payment\Capture\CancelOrderProcessor $cancelOrderProcessor,
-        \Wizpay\Wizpayy\Model\Order\Payment\QuotePaidStorage $quotePaidStorage,
+        \Wizpay\Wizpay\Model\Payment\Capture\CancelOrderProcessor $cancelOrderProcessor,
+        \Wizpay\Wizpay\Model\Order\Payment\QuotePaidStorage $quotePaidStorage,
         \Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface $paymentDataObjectFactory,
         \Psr\Log\LoggerInterface $logger
     ) {
