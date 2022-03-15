@@ -27,15 +27,15 @@ class Index implements \Magento\Framework\App\Action\HttpGetActionInterface
         \Magento\Checkout\Model\Session $session,
         \Magento\Framework\Controller\Result\RedirectFactory $redirectFactory,
         \Magento\Framework\Message\ManagerInterface $messageManager,
-        \Wizpay\Wizpay\Model\Payment\Capture\PlaceOrderProcessor $placeOrderProcessor,
-        \Magento\Payment\Gateway\CommandInterface $validateCheckoutDataCommand
+        \Wizpay\Wizpay\Model\Payment\Capture\PlaceOrderProcessor $placeOrderProcessor//,
+        //\Magento\Payment\Gateway\CommandInterface $validateCheckoutDataCommand
     ) {
         $this->request = $request;
         $this->session = $session;
         $this->redirectFactory = $redirectFactory;
         $this->messageManager = $messageManager;
         $this->placeOrderProcessor = $placeOrderProcessor;
-        $this->validateCheckoutDataCommand = $validateCheckoutDataCommand;
+        //$this->validateCheckoutDataCommand = $validateCheckoutDataCommand;
     }
 
     public function execute()
@@ -46,6 +46,7 @@ class Index implements \Magento\Framework\App\Action\HttpGetActionInterface
             );
             return $this->redirectFactory->create()->setPath('checkout/cart');
         }
+
         if ($this->request->getParam('status') != self::CHECKOUT_STATUS_SUCCESS) {
             $this->messageManager->addErrorMessage(
                 (string)__('Wizpay payment is failed. Please select an alternative payment method.')
@@ -56,7 +57,7 @@ class Index implements \Magento\Framework\App\Action\HttpGetActionInterface
         try {
             $quote = $this->session->getQuote();
             $wizpayOrderToken = $this->request->getParam('orderToken');
-            $this->placeOrderProcessor->execute($quote, $this->validateCheckoutDataCommand, $wizpayOrderToken);
+           // $this->placeOrderProcessor->execute($quote, $this->validateCheckoutDataCommand, $wizpayOrderToken);
         } catch (\Throwable $e) {
             $errorMessage = $e instanceof \Magento\Framework\Exception\LocalizedException
                 ? $e->getMessage()

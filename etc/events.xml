@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-    <event name="payment_method_is_active">
+    
+    <!-- <event name="payment_method_is_active">
         <observer name="wizpay" instance="Wizpay\Wizpay\Observer\DataAssignObserver" />
     </event>
 
@@ -10,6 +11,18 @@
 
     <event name="sales_order_save_before">
         <observer name="wizpay_order_before" instance="Wizpay\Wizpay\Observer\SalesOrderSaveBefore" />
+    </event> -->
+
+    <event name="sales_order_payment_pay">
+        <observer name="wizpay_set_quote_is_paid_by_wizpay"
+                  instance="Wizpay\Wizpay\Observer\SetQuoteIsPaidByWizpay"/>
     </event>
+    <event name="payment_method_assign_data_wizpay">
+        <observer name="wizpay_gateway_data_assign" instance="Wizpay\Wizpay\Observer\Payment\DataAssignObserver"/>
+    </event>
+    <!-- <event name="sales_order_shipment_save_before">
+        <observer name="wizpay_auth_capture_before_shipment"
+                  instance="Wizpay\Wizpay\Observer\AuthCaptureBeforeShipment"/>
+    </event> -->
 
 </config>

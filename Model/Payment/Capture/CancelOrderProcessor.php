@@ -11,13 +11,13 @@ class CancelOrderProcessor
     private \Magento\Payment\Gateway\CommandInterface $voidCommand;
 
     public function __construct(
-        \Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface $paymentDataObjectFactory,
-        \Magento\Payment\Gateway\CommandInterface $refundCommand,
-        \Magento\Payment\Gateway\CommandInterface $voidCommand
+        \Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface $paymentDataObjectFactory//,
+        //\Magento\Payment\Gateway\CommandInterface $refundCommand,
+        //\Magento\Payment\Gateway\CommandInterface $voidCommand
     ) {
         $this->paymentDataObjectFactory = $paymentDataObjectFactory;
-        $this->refundCommand = $refundCommand;
-        $this->voidCommand = $voidCommand;
+        //$this->refundCommand = $refundCommand;
+        //$this->voidCommand = $voidCommand;
     }
 
     /**
