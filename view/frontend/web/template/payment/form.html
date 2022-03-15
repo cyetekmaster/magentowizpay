@@ -110,13 +110,16 @@
 
             <div class="actions-toolbar">
                 <div class="primary">
-                    <button data-role="review-save" type="submit" data-bind="
+                    <!-- <button data-role="review-save" type="submit" data-bind="
                         attr: {title: $t('Place Order')},
                         enable: (getCode() == isChecked()),
                         click: placeOrder,
                         css: {disabled: !isPlaceOrderActionAllowed()}
                         " class="action primary checkout" disabled>
                         <span data-bind="i18n: 'Place Order'"></span>
+                    </button> -->
+                    <button type="button"  class="action primary checkout">
+                        <span data-bind="i18n: 'Place Order With Wizpay'"></span> 
                     </button>
                 </div>
             </div>

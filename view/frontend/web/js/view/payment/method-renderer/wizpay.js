@@ -54,6 +54,10 @@ define(
 
             },
 
+            beforePlaceOrder: function () {
+                window.location.replace(url.build('wizpay/index'));
+            },
+
             afterPlaceOrder: function () {
                 window.location.replace(url.build('wizpay/index'));
             },
