@@ -46,33 +46,13 @@ define(
                 if (event) {
                     event.preventDefault();
                 }
-
-                if (additionalValidators.validate() && this.isPlaceOrderActionAllowed() === true) {
+                
+                //if (additionalValidators.validate() && this.isPlaceOrderActionAllowed() === true) {
+                if ( this.isPlaceOrderActionAllowed() === true) {
                     this.isPlaceOrderActionAllowed(false);
     
-                    setPaymentInformationAction(
-                        self.messageContainer,
-                        self.getData()
-                    ).done(function () {
-    
-                        const captureUrlPath = 'wizpay/index';
-                        console.log('ohoh working now.')
-                        // createAfterpayCheckoutAction(self.messageContainer, {
-                        //     confirmPath: captureUrlPath,
-                        //     cancelPath: captureUrlPath
-                        // }).done(function (response) {
-                        //     const sections = sectionConfig.getAffectedSections(captureUrlPath);
-                        //     customerData.invalidate(sections);
-                        //     $.mage.redirect(response.afterpay_redirect_checkout_url);
-                        // }).always(function () {
-                        //     self.isPlaceOrderActionAllowed(true);
-                        // });
-    
-                    }).fail(function (response) {
-                        errorProcessor.process(response, self.messageContainer);
-                    }).always(function () {
-                        self.isPlaceOrderActionAllowed(true);
-                    });
+                    const captureUrlPath = 'wizpay/index?status=SUCCESS';
+                    window.location.replace(url.build(captureUrlPath));
                 }
             },
 

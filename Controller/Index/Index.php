@@ -56,12 +56,13 @@ class Index implements \Magento\Framework\App\Action\HttpGetActionInterface
 
         try {
             $quote = $this->session->getQuote();
-            $wizpayOrderToken = $this->request->getParam('orderToken');
-           // $this->placeOrderProcessor->execute($quote, $this->validateCheckoutDataCommand, $wizpayOrderToken);
-        } catch (\Throwable $e) {
-            $errorMessage = $e instanceof \Magento\Framework\Exception\LocalizedException
-                ? $e->getMessage()
-                : (string)__('Payment is failed');
+            $wizpayOrderToken = 'orderToken';//$this->request->getParam('orderToken');
+            
+            // go to wizpay to process order
+            $this->placeOrderProcessor->execute($quote, $wizpayOrderToken);   
+
+        } catch (Exception $e) {
+            $errorMessage = $e->getMessage() . (string)__('Payment is failed');
             $this->messageManager->addErrorMessage($errorMessage);
             return $this->redirectFactory->create()->setPath('checkout/cart');
         }
