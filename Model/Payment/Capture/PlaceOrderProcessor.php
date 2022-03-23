@@ -149,7 +149,7 @@ class PlaceOrderProcessor
                 $itemsdata[] = [
                     'name' => $item->getName(),
                     'sku' => $item->getSku(),
-                    'quantity' => (int)$item->getQtyOrdered(),
+                    'quantity' => (int)$item->getQty(),
                     'price' => [
                         'amount' => number_format(floatval($item->getPrice()), 2),
                         'currency' => $getStoreCurrency
