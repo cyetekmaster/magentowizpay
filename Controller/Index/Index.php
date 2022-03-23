@@ -61,8 +61,9 @@ class Index implements \Magento\Framework\App\Action\HttpGetActionInterface
             // go to wizpay to process order
             $this->placeOrderProcessor->execute($quote, $wizpayOrderToken);   
 
-        } catch (Exception $e) {
-            $errorMessage = $e->getMessage() . (string)__('Payment is failed');
+        } catch (\Throwable $e) {
+            //$errorMessage = $e->getMessage() . (string)__('Payment is failed');
+            $errorMessage = (string)__('Payment is failed');
             $this->messageManager->addErrorMessage($errorMessage);
             return $this->redirectFactory->create()->setPath('checkout/cart');
         }

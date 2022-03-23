@@ -39,19 +39,18 @@ class PlaceOrderProcessor
             // get wizpay url
             $wzresponse = $this->getOrderData($quote);
 
-            if (isset($wzresponse) && is_array($wzresponse)){
-                if ('200' == $wzresponse['responseCode']){
-                    $redirect_url = $wzresponse['redirectCheckoutUrl'];
-                    $wzToken = $wzresponse['token'];
-                    $wzTxnId = $wzresponse['transactionId'];
-                    
-                    $resultRedirect = $this->resultRedirectFactory->create();
-                    //$redirectLink = $redirect_url;
-                    $resultRedirect->setUrl($redirect_url);
+            if (isset($wzresponse) && is_array($wzresponse) && $wzresponse['responseCode'] != null
+                && '200' == $wzresponse['responseCode']){
+                $redirect_url = $wzresponse['redirectCheckoutUrl'];
+                $wzToken = $wzresponse['token'];
+                $wzTxnId = $wzresponse['transactionId'];
+                
+                $resultRedirect = $this->resultRedirectFactory->create();
+                //$redirectLink = $redirect_url;
+                $resultRedirect->setUrl($redirect_url);
 
-                    // return retirect url
-                    return $resultRedirect;
-                }
+                // return retirect url
+                return $resultRedirect;
             }else{
                 throw new \Magento\Framework\Exception\LocalizedException(
                     __(
