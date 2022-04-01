@@ -36,8 +36,10 @@ class PlaceOrderProcessor
     public function execute(Quote $quote, string $wizpayOrderToken)
     {
         try {
+            $uniqid = hash('md5', time() . $quote->getId());
+            $merchantReference =  'MER' . $uniqid . '-' . $quote->getId();
             // get wizpay url
-            $wzresponse = $this->getOrderData($quote);
+            $wzresponse = $this->getOrderData($quote, $merchantReference);
 
             if (isset($wzresponse) && is_array($wzresponse) && $wzresponse['responseCode'] != null
                 && '200' == $wzresponse['responseCode']){
@@ -45,17 +47,27 @@ class PlaceOrderProcessor
                 $wzToken = $wzresponse['token'];
                 $wzTxnId = $wzresponse['transactionId'];
                 
-                $resultRedirect = $this->resultRedirectFactory->create();
-                //$redirectLink = $redirect_url;
-                $resultRedirect->setUrl($redirect_url);
+                // TODO: App payment method into quote
+                $paymentMethod = $quote->getPayment();
+                $data_to_store =  [
+                    'token' => $wzToken,
+                    'transactionId' => $wzTxnId,
+                    'mer' => $merchantReference
+                ];
+
+                $paymentMethod->setTransactionId($wzTxnId);
+                $paymentMethod->setParentTransactionId($paymentMethod->getTransactionId());
+
+                $paymentMethod->setAdditionalInformation($data_to_store);
+                $paymentMethod->save();
+                $quote->save();
 
                 // return retirect url
-                return $resultRedirect;
+                return $redirect_url;
             }else{
                 throw new \Magento\Framework\Exception\LocalizedException(
                     __(
-                        'There was a problem placing your order. Your Wizpay order %1 is refunded.',
-                        $wizpayPayment->getAdditionalInformation(AdditionalInformationInterface::WIZPAY_ORDER_ID)
+                        'There was a problem placing your order.'
                     )
                 );
             }
@@ -63,24 +75,18 @@ class PlaceOrderProcessor
 
         } catch (\Throwable $e) {
             $this->logger->critical('Order placement is failed with error: ' . $e->getMessage());
-            $quoteId = (int)$quote->getId();
-            if ($wizpayPayment = $this->quotePaidStorage->getWizpayPaymentIfQuoteIsPaid($quoteId)) {
-                $this->cancelOrderProcessor->execute($wizpayPayment);
-                throw new \Magento\Framework\Exception\LocalizedException(
+            throw new \Magento\Framework\Exception\LocalizedException(
                     __(
-                        'There was a problem placing your order. Your Wizpay order %1 is refunded.',
-                        $wizpayPayment->getAdditionalInformation(AdditionalInformationInterface::WIZPAY_ORDER_ID)
+                        'There was a problem placing your order.'
                     )
-                );
-            }
-            throw $e;
+            );
         }
     }
 
 
 
 
-    private function getOrderData(Quote $quote)
+    private function getOrderData(Quote $quote, $merchantReference)
     {
 
         // $orders = $this->_checkoutSession->getLastRealOrder();
@@ -103,8 +109,7 @@ class PlaceOrderProcessor
         $billingaddress = $quote->getBillingAddress();
         $getStreet = $billingaddress->getStreet();
 
-        $uniqid = hash('md5', time() . $quoteId);
-        $merchantReference =  'MER' . $uniqid . '-' . $quoteId;
+        
         $successurl = $this->wizpay_data_helper->getCompleteUrl();
         $cancelurl = $this->wizpay_data_helper->getCancelledUrl();
 

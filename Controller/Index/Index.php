@@ -21,21 +21,22 @@ class Index implements \Magento\Framework\App\Action\HttpGetActionInterface
     private \Magento\Framework\Message\ManagerInterface $messageManager;
     private \Wizpay\Wizpay\Model\Payment\Capture\PlaceOrderProcessor $placeOrderProcessor;
     private \Magento\Payment\Gateway\CommandInterface $validateCheckoutDataCommand;
+    private \Psr\Log\LoggerInterface $logger;
 
     public function __construct(
         \Magento\Framework\App\RequestInterface $request,
         \Magento\Checkout\Model\Session $session,
         \Magento\Framework\Controller\Result\RedirectFactory $redirectFactory,
         \Magento\Framework\Message\ManagerInterface $messageManager,
-        \Wizpay\Wizpay\Model\Payment\Capture\PlaceOrderProcessor $placeOrderProcessor//,
-        //\Magento\Payment\Gateway\CommandInterface $validateCheckoutDataCommand
+        \Wizpay\Wizpay\Model\Payment\Capture\PlaceOrderProcessor $placeOrderProcessor,
+        \Psr\Log\LoggerInterface $logger
     ) {
         $this->request = $request;
         $this->session = $session;
         $this->redirectFactory = $redirectFactory;
         $this->messageManager = $messageManager;
         $this->placeOrderProcessor = $placeOrderProcessor;
-        //$this->validateCheckoutDataCommand = $validateCheckoutDataCommand;
+        $this->logger = $logger;
     }
 
     public function execute()
@@ -59,10 +60,13 @@ class Index implements \Magento\Framework\App\Action\HttpGetActionInterface
             $wizpayOrderToken = 'orderToken';//$this->request->getParam('orderToken');
             
             // go to wizpay to process order
-            $this->placeOrderProcessor->execute($quote, $wizpayOrderToken);   
+            $wizpay_payment_url = $this->placeOrderProcessor->execute($quote, $wizpayOrderToken);   
 
+            return $this->redirectFactory->create()->setPath($wizpay_payment_url);
         } catch (\Throwable $e) {
-            //$errorMessage = $e->getMessage() . (string)__('Payment is failed');
+            $this->logger->info("-------------->>>>>>>>>>>>>>>>Wizpay index error<<<<<<<<<<<<<<--------------");
+            $this->logger->info($e->getMessage());
+            $this->logger->info("-------------->>>>>>>>>>>>>>>>Wizpay index error<<<<<<<<<<<<<<--------------");
             $errorMessage = (string)__('Payment is failed');
             $this->messageManager->addErrorMessage($errorMessage);
             return $this->redirectFactory->create()->setPath('checkout/cart');

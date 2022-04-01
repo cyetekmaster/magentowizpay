@@ -154,9 +154,6 @@ class Data extends AbstractHelper
             if( $environment == 1){
                 $setting = $this->scopeConfig->getValue('payment/wizpay/api_key_sandbox', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
-                $this->initiateWizpayLogger('We are using sandbox api_key: ' . $setting);
-            }else{
-                $this->initiateWizpayLogger('We are using live api_key: ' . $setting);
             }
         }
 
@@ -217,8 +214,6 @@ class Data extends AbstractHelper
         }
         
 
-        $this->initiateWizpayLogger('We are using environment: 1-> Sandbox, 0-> Live: ' . $environment);
-
         return $this->GetApiUrl(intval($environment));
     }
 
@@ -229,6 +224,10 @@ class Data extends AbstractHelper
 
     private function getWizpayapi($url, $apikey)
     {
+
+        $this->initiateWizpayLogger('--------------------------getWizpayapi start------------------------------------------');
+        $this->initiateWizpayLogger('>>>>>>>>>>apikey: ' . $apikey . PHP_EOL);
+        $this->initiateWizpayLogger('>>>>>>>>>>URI: ' . $url . PHP_EOL);
         
         try {
 
@@ -260,9 +259,16 @@ class Data extends AbstractHelper
                 $errormessage = 'Error: Invalid Json Format received from Wizpay API. Please contact customer support in this regard!!'; // phpcs:ignore
                 return $errormessage;
             }
+
+
+            $this->initiateWizpayLogger('>>>>>>>>response: ' . json_encode($finalresult) . PHP_EOL);
+            $this->initiateWizpayLogger('--------------------------getWizpayapi end------------------------------------------');
+
             return $finalresult;
 
         } catch (\Exception $e) {
+            $this->initiateWizpayLogger('>>>>>>>>error: ' . $e->getMessage() . PHP_EOL);
+            $this->initiateWizpayLogger('--------------------------getWizpayapi end------------------------------------------');
             return $e->getMessage();
         }
     }
@@ -272,6 +278,11 @@ class Data extends AbstractHelper
         $this->getCurlClient()->setOption(CURLOPT_RETURNTRANSFER, true);
         $this->getCurlClient()->setOption(CURLOPT_SSL_VERIFYHOST, false);
         $this->getCurlClient()->setOption(CURLOPT_SSL_VERIFYPEER, false);
+
+        $this->initiateWizpayLogger('--------------------------postWizpayapi start------------------------------------------');
+        $this->initiateWizpayLogger('>>>>>>>>>>apikey: ' . $apikey . PHP_EOL);
+        $this->initiateWizpayLogger('>>>>>>>>>>URI: ' . $url . PHP_EOL);
+        $this->initiateWizpayLogger('>>>>>>>>>>Request: ' . json_encode($requestbody) . PHP_EOL);
 
 
         try {
@@ -289,10 +300,16 @@ class Data extends AbstractHelper
                 return $errormessage;
             }
 
+
+            $this->initiateWizpayLogger('>>>>>>>>response: ' . json_encode($finalresult) . PHP_EOL);
+            $this->initiateWizpayLogger('--------------------------postWizpayapi end------------------------------------------');
+
             return $finalresult;
 
         } catch (\Exception $e) {
 
+            $this->initiateWizpayLogger('>>>>>>>>error: ' . $e->getMessage() . PHP_EOL);
+            $this->initiateWizpayLogger('--------------------------postWizpayapi end------------------------------------------');
             return $e->getMessage();
         }
     }
@@ -304,8 +321,6 @@ class Data extends AbstractHelper
         $finalapiurl = $this->apiUrl($environment) . $actualapicall;
         //$finalapiurl = 'http://mywp.preyansh.in/wzapi.php';
         $apiresult = $this->getWizpayapi($finalapiurl, $apikey);
-        $this->initiateWizpayLogger('callLimitapi() function called'.PHP_EOL);
-        $this->initiateWizpayLogger('GetLimitApiResult:'. print_r ($apiresult));
         // echo $finalapiurl;
         // echo "<Pre>";
         // print_r($apiresult);
@@ -314,24 +329,20 @@ class Data extends AbstractHelper
             $error = true;
             $errormessage = 'Error: Looks like your Website IP Address is not white-listed in Wizpay. Please connect with Wizpay support team!'; // phpcs:ignore
             $apiresult = $errormessage;
-            $this->initiateWizpayLogger('failure:'.$apiresult);
 
         } elseif (false !== $apiresult && '200' == $apiresult['responseCode']) {
 
-            $this->initiateWizpayLogger('success:'.json_encode($apiresult));
 
         } elseif ('402' == $apiresult['responseCode'] || '412' == $apiresult['responseCode']) {
             $error = true;
             $errormessage = 'Call Transaction Limit Error: ' . $apiresult['errorCode'] . ' - ' . $apiresult['errorMessage']; // phpcs:ignore
             
             $apiresult = $errormessage;
-            $this->initiateWizpayLogger('failure:'.$apiresult);
             
         } else {
             $error = true;
             $errormessage = 'Error: Please enter a valid Wizpay API Key!';
             $apiresult = $errormessage;
-            $this->initiateWizpayLogger('failure:'.$apiresult);
         }
         return $apiresult;
     }
@@ -340,15 +351,10 @@ class Data extends AbstractHelper
     {
         $error = false;
         $actualapicall = 'transactioncheckouts';
-        $this->initiateWizpayLogger('callCcheckoutsRredirectAapi() function call to get URI: ' . PHP_EOL);
         $finalapiurl = $this->apiUrl() . $actualapicall;
         
-        $this->initiateWizpayLogger('callCcheckoutsRredirectAapi() function call to URI: ' . $finalapiurl . PHP_EOL);
-        $this->initiateWizpayLogger('callCcheckoutsRredirectAapi() function call Request: ' . json_encode($requestbody) . PHP_EOL);
         $apiresult = $this->postWizpayapi($finalapiurl, $requestbody, $apikey);
 
-        $this->initiateWizpayLogger('callCcheckoutsRredirectAapi() function called'.PHP_EOL);
-        $this->createWcog($apiresult);
 
         if (isset($apiresult['errors']) && $apiresult['status'] == '400') {
 
@@ -356,12 +362,8 @@ class Data extends AbstractHelper
             $errormessage = 'Checkout Redirect Error: ' . 'Invalid address or One or more validation errors occurred.';
             
             $apiresult = $errormessage;
-            $this->initiateWizpayLogger('failure:'.$apiresult);
             
         } elseif (isset($apiresult) && '200' == $apiresult['responseCode'] && isset($apiresult['responseCode'])) {
-            $this->initiateWizpayLogger('success:'.json_encode($apiresult));
-
-            $this->initiateWizpayLogger('API return success' . PHP_EOL);
 
         } elseif ('402' == $apiresult['responseCode'] || '412' == $apiresult['responseCode'] && isset($apiresult['responseCode'])) { // phpcs:ignore
 
@@ -369,13 +371,11 @@ class Data extends AbstractHelper
             $errormessage = 'Checkout Redirect Error: ' . $apiresult['errorCode'] . ' - ' . $apiresult['errorMessage'];
             
             $apiresult = $errormessage;
-            $this->initiateWizpayLogger('failure:'.$apiresult);
             
         } else {
             $error = true;
             $errormessage = 'Checkout Redirect Error: ' . $apiresult['responseCode'];
             $apiresult = $errormessage;
-            $this->initiateWizpayLogger('failure:'.$apiresult);
         }
         return $apiresult;
     }
@@ -387,12 +387,7 @@ class Data extends AbstractHelper
         $finalapiurl = $this->apiUrl($environment) . $actualapicall;
         //$finalapiurl = 'http://mywp.preyansh.in/wzapi.php';
         
-        $this->initiateWizpayLogger('callConfigurMerchantPlugin() function call to URI: ' . $finalapiurl . PHP_EOL);
-        $this->initiateWizpayLogger('callConfigurMerchantPlugin() function call Request: ' . json_encode($requestbody) . PHP_EOL);
         $apiresult = $this->postWizpayapi($finalapiurl, $requestbody, $apikey);
-        $this->initiateWizpayLogger('callConfigurMerchantPlugin() function call Response: ' . json_encode($apiresult) . PHP_EOL);
-        $this->initiateWizpayLogger('callConfigurMerchantPlugin() function called'.PHP_EOL);
-        $this->createWcog($apiresult);
 
         return $apiresult;
     }
@@ -403,8 +398,6 @@ class Data extends AbstractHelper
         $finalapiurl = $this->apiUrl() . $actualapicall;
         //print_r($apikey);
         $apiresult = $this->postWizpayapi($finalapiurl, $requestbody, $apikey);
-        $this->initiateWizpayLogger('TransactionStatus api called'.PHP_EOL);
-        $this->createWcog($apiresult);
 
         if (false !== $apiresult && '200' == $apiresult['responseCode']) {
             //print_r($apiresult);
@@ -414,25 +407,36 @@ class Data extends AbstractHelper
             if (!empty($responseerror)) {
                 
                 $apiresult = $responseerror;
-                $this->initiateWizpayLogger('Order Status Error: '.$apiresult);
             } else {
                
-                $this->initiateWizpayLogger('API return success' . PHP_EOL);
             }
 
         } elseif ('402' == $apiresult['responseCode'] || '412' == $apiresult['responseCode']) {
             $error = true;
             $errormessage = 'Order Status Error: ' . $apiresult['errorCode'] . ' - ' . $apiresult['errorMessage'] . ' - ' . $apiresult['paymentDescription']; // phpcs:ignore
             $apiresult = $errormessage;
-             $this->initiateWizpayLogger('Order Status Error: '.$apiresult);
         } else {
             $error = true;
             $errormessage = 'Order Status Error: ' . $apiresult['errorCode'] . ' - ' . $apiresult['errorMessage'];
             $apiresult = $errormessage;
-            $this->initiateWizpayLogger('Order Status Error: '.$apiresult);
         }
         return $apiresult;
     }
+
+
+    public function updateOrderIdApi($apikey, $transactionId, $orderId)
+    {
+        $actualapicall = 'Payment/merchantOrderId/' . $transactionId;
+        $finalapiurl = $this->apiUrl() . $actualapicall;
+        //print_r($apikey);
+        $api_data = [
+            "merchantOrderId" => $orderId
+        ];
+        $this->postWizpayapi($finalapiurl, $api_data, $apikey);
+    }
+
+
+
 
     public function handleOrderPaymentStatusApiError($apiresult, $errormessage)
     {
@@ -465,8 +469,6 @@ class Data extends AbstractHelper
         
         $apiresult = $this->postWizpayapi($finalapiurl, $requestbody, $apikey);
 
-        $this->initiateWizpayLogger('TransactionCapture (Immediate Capture) api called' . PHP_EOL);
-        $this->createWcog($apiresult);
 
         if (false !== $apiresult && '200' == $apiresult['responseCode']) {
             
@@ -476,21 +478,19 @@ class Data extends AbstractHelper
             if (!empty($responseerror)) {
                 
                 $apiresult = $responseerror;
-                $this->initiateWizpayLogger('Order Status Error: '.$apiresult);
             } else {
                
-                $this->initiateWizpayLogger('API return success' . PHP_EOL);
             }
 
         } elseif ('402' == $apiresult['responseCode'] || '412' == $apiresult['responseCode']) {
             $error = true;
             $errormessage = 'Immediate Payment Capture Error: ' . $apiresult['errorCode'] . ' - ' . $apiresult['errorMessage'] . ' - ' . $apiresult['paymentDescription']; // phpcs:ignore
-            $this->initiateWizpayLogger($errormessage);
+            
             $apiresult = $errormessage;
         } else {
             $error = true;
             $errormessage = 'Immediate Payment Capture Error: ' . $apiresult['errorCode'] . ' - ' . $apiresult['errorMessage'] . ' - ' . $apiresult['paymentDescription']; // phpcs:ignore
-            $this->initiateWizpayLogger($errormessage);
+            
             $apiresult = $errormessage;
         }
         return $apiresult;
@@ -503,27 +503,26 @@ class Data extends AbstractHelper
         if ('APPROVED' != $apiresult['transactionStatus'] && 'COMPLETED' != $apiresult['transactionStatus']) {
 
             $errormessage = 'Wizpay Payment Failed. Wizpay Transaction ' . $apiOrderId . ' has been Declined';
-            $this->initiateWizpayLogger($errormessage);
         }
 
         if ('3005' == $apiresult['errorCode']) {
 
             $errormessage = 'Wizpay Payment Failed. Wizpay Transaction ' . $apiOrderId . ' Reason: ' . $apiresult['errorMessage']; // phpcs:ignore
-            $this->initiateWizpayLogger($errormessage);
+            
 
         }
 
         if ('3008' == $apiresult['errorCode']) {
 
             $errormessage = 'Wizpay Payment Failed. Wizpay Transaction ' . $apiOrderId . ' Reason: ' . $apiresult['errorMessage']; // phpcs:ignore
-            $this->initiateWizpayLogger($errormessage);
+            
 
         }
 
         if ('3006' == $apiresult['errorCode']) {
 
             $errormessage = 'Wizpay Payment Failed. Wizpay Transaction ' . $apiOrderId . ' Reason: ' . $apiresult['errorMessage']; // phpcs:ignore
-            $this->initiateWizpayLogger($errormessage);
+            
             
         }
 
@@ -540,7 +539,7 @@ class Data extends AbstractHelper
             } else {
                 $errormessage = 'Wizpay Transaction ' . $apiOrderId . ' Payment Failed.';
             }
-            $this->initiateWizpayLogger($errormessage);
+           
             
         }
         return $errormessage;
@@ -553,9 +552,6 @@ class Data extends AbstractHelper
         
         $apiresult = $this->postWizpayapi($finalapiurl, $requestbody, $apikey);
        
-        $this->initiateWizpayLogger('TransactionCapture (Partial Capture) api called' . PHP_EOL);
-        $this->createWcog($apiresult);
-
         if (false !== $apiresult && '200' == $apiresult['responseCode']) {
             
             $errormessage = '';
@@ -564,21 +560,19 @@ class Data extends AbstractHelper
             if (!empty($responseerror)) {
                 
                 $apiresult = $responseerror;
-                $this->initiateWizpayLogger('Order Status Error: '.$apiresult);
             } else {
                
-                $this->initiateWizpayLogger('API return success' . PHP_EOL);
             }
 
         } elseif ('402' == $apiresult['responseCode'] || '412' == $apiresult['responseCode']) {
             $error = true;
             $errormessage = 'Partial Payment Capture Error: ' . $apiresult['errorCode'] . ' - ' . $apiresult['errorMessage'] . ' - ' . $apiresult['paymentDescription']; // phpcs:ignore
-            $this->initiateWizpayLogger($errormessage);
+            
             $apiresult = $errormessage;
         } else {
             $error = true;
             $errormessage = 'Partial Payment Capture Error: ' . $apiresult['errorCode'] . ' - ' . $apiresult['errorMessage'] . ' - ' . $apiresult['paymentDescription']; // phpcs:ignore
-            $this->initiateWizpayLogger($errormessage);
+            
             $apiresult = $errormessage;
         }
         return $apiresult;
@@ -591,27 +585,27 @@ class Data extends AbstractHelper
         if ('APPROVED' != $apiresult['transactionStatus'] && 'COMPLETED' != $apiresult['transactionStatus']) {
 
             $errormessage = 'Wizpay Payment Failed. Wizpay Transaction ' . $apiOrderId . ' has been Declined';
-            $this->initiateWizpayLogger($errormessage);
+            
         }
 
         if ('3005' == $apiresult['errorCode']) {
 
             $errormessage = 'Wizpay Payment Failed. Wizpay Transaction ' . $apiOrderId . ' Reason: ' . $apiresult['errorMessage']; // phpcs:ignore
-            $this->initiateWizpayLogger($errormessage);
+            
 
         }
 
         if ('3008' == $apiresult['errorCode']) {
 
             $errormessage = 'Wizpay Payment Failed. Wizpay Transaction ' . $apiOrderId . ' Reason: ' . $apiresult['errorMessage']; // phpcs:ignore
-            $this->initiateWizpayLogger($errormessage);
+            
 
         }
 
         if ('3006' == $apiresult['errorCode']) {
 
             $errormessage = 'Wizpay Payment Failed. Wizpay Transaction ' . $apiOrderId . ' Reason: ' . $apiresult['errorMessage']; // phpcs:ignore
-            $this->initiateWizpayLogger($errormessage);
+            
             
         }
 
@@ -626,7 +620,7 @@ class Data extends AbstractHelper
             } else {
                 $errormessage = 'Wizpay Transaction ' . $apiOrderId . ' Payment Failed.';
             }
-            $this->initiateWizpayLogger($errormessage);
+            
             
         }
         return $errormessage;
@@ -639,9 +633,6 @@ class Data extends AbstractHelper
         $finalapiurl = $this->apiUrl() . $actualapicall;
 
         $apiresult = $this->postWizpayapi($finalapiurl, $requestbody, $apikey);
-        $this->initiateWizpayLogger('Refund api called' . PHP_EOL);
-        $this->createWcog($apiresult);
-
         if (false !== $apiresult && '200' == $apiresult['responseCode']) {
             
             $errormessage = '';
@@ -651,10 +642,9 @@ class Data extends AbstractHelper
             if (!empty($responseerror)) {
                 
                 $apiresult = $responseerror;
-                $this->initiateWizpayLogger('Order Refund Error: '.$apiresult);
             } else {
                
-                $this->initiateWizpayLogger('API return success' . PHP_EOL);
+               
             }
 
         } elseif ('402' == $apiresult['responseCode'] || '412' == $apiresult['responseCode']) {
@@ -662,12 +652,12 @@ class Data extends AbstractHelper
             $errormessage = 'Error: ' . $apiresult['errorCode']
             . ' - ' . $apiresult['errorMessage']
             . ' - ' . $apiresult['paymentDescription'];
-            $this->initiateWizpayLogger($errormessage);
+            
             $apiresult = $errormessage;
         } else {
             $error = true;
             $errormessage = 'Error: ' . $apiresult['errorCode'] . ' - ' . $apiresult['errorMessage'];
-            $this->initiateWizpayLogger($errormessage);
+            
             $apiresult = $errormessage;
         }
         return $apiresult;
@@ -680,7 +670,7 @@ class Data extends AbstractHelper
         if ('APPROVED' != $apiresult['transactionStatus'] && 'COMPLETED' != $apiresult['transactionStatus']) {
 
             $errormessage = 'Wizpay Payment Failed. Wizpay Transaction ' . $apiOrderId . ' has been Declined';
-            $this->initiateWizpayLogger($errormessage);
+            
         }
 
         if ('AUTH_APPROVED' != $apiresult['paymentStatus'] &&
@@ -696,7 +686,7 @@ class Data extends AbstractHelper
             } else {
                 $errormessage = 'Wizpay Transaction ' . $apiOrderId . ' Payment Failed.';
             }
-            $this->initiateWizpayLogger($errormessage);
+            
         }
         return $errormessage;
     }
@@ -708,8 +698,7 @@ class Data extends AbstractHelper
         $finalapiurl = $this->apiUrl() . $actualapicall;
         
         $apiresult = $this->postWizpayapi($finalapiurl, $wz_txn_id, $apikey);
-        $this->initiateWizpayLogger('Cancel api called' . PHP_EOL);
-        $this->createWcog($apiresult);
+        
 
         if (false !== $apiresult && '200' == $this->getDataFromJsonObj('responseCode', $apiresult)) { // phpcs:ignore
 
@@ -718,27 +707,26 @@ class Data extends AbstractHelper
             if (!empty($responseerror)) {
                 
                 $apiresult = $responseerror;
-                $this->initiateWizpayLogger('Order Cancel Error: '.$apiresult);
             } else {
                
-                $this->initiateWizpayLogger('API return success' . PHP_EOL);
+                
             }
 
         } elseif ('412' == $this->getDataFromJsonObj('responseCode', $apiresult)) { // phpcs:ignore
             $error = true;
             $errormessage = 'Cancel attempt failed because payment has already been captured for this order';
-            $this->initiateWizpayLogger($errormessage);
+            
             $apiresult = $errormessage;
 
         } elseif ('402' == $this->getDataFromJsonObj('responseCode', $apiresult)) { // phpcs:ignore
             $error = true;
             $errormessage = 'Error: ' . $this->getDataFromJsonObj('errorCode', $apiresult) . ' - ' . $this->getDataFromJsonObj('errorMessage', $apiresult) . ' - ' . $this->getDataFromJsonObj('paymentDescription', $apiresult); // phpcs:ignore
-            $this->initiateWizpayLogger($errormessage);
+            
             $apiresult = $errormessage;
         } else {
             $error = true;
             $errormessage = 'Error: ' . $this->getDataFromJsonObj('errorCode', $apiresult) . ' - ' . $this->getDataFromJsonObj('errorMessage', $apiresult); // phpcs:ignore
-            $this->initiateWizpayLogger($errormessage);
+            
             $apiresult = $errormessage;
         }
         return $apiresult;
@@ -752,14 +740,14 @@ class Data extends AbstractHelper
             'COMPLETED' != $apiresult['transactionStatus']) {
 
             $errormessage = "Wizpay Payment cancel doesn't authorised. Wizpay Transaction " . $apiOrderId . '  has been Declined!'; // phpcs:ignore
-            $this->initiateWizpayLogger($errormessage);
+            
         }
 
         if ('VOIDED' != $apiresult['paymentStatus'] && 'CAPTURED' != $apiresult['paymentStatus']) {
             $orderMessage = '';
                
             $errormessage = 'Wizpay Transaction ' . $apiOrderId . ' Payment Cancel Failed';
-            $this->initiateWizpayLogger($errormessage);
+            
         }
         return $errormessage;
     }
