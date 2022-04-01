@@ -25,6 +25,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
     private \Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface $paymentDataObjectFactory;
     private \Wizpay\Wizpay\Helper\Data $wizpay_data_helper;
     private \Magento\Sales\Model\Order $order;
+    private \Wizpay\Wizpay\Helper\Checkout $checkoutHelper;
 
     public function __construct(
         \Magento\Framework\App\Request\Http $request,
@@ -36,7 +37,8 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         \Magento\Quote\Model\QuoteFactory $quoteFactory,
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
         \Wizpay\Wizpay\Helper\Data $wizpay_helper,
-        \Magento\Sales\Model\Order $order
+        \Magento\Sales\Model\Order $order,
+        \Wizpay\Wizpay\Helper\Checkout $checkout
     ) {
         $this->request = $request;
         $this->session = $session;
@@ -48,6 +50,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         $this->quoteFactory = $quoteFactory;
         $this->wizpay_data_helper = $wizpay_helper;
         $this->order = $order;
+        $this->checkoutHelper = $checkout;
     }
 
     public function execute()
@@ -248,13 +251,13 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                         );
 
                         if (!is_array($wzresponse)) {
-                            $this->getCheckoutHelper()->cancelCurrentOrder(
+                            $this->checkoutHelper->cancelCurrentOrder(
                                 "Order #" .
                                     $order->getId() .
                                     " was rejected by Wizpay. Transaction #$wzTxnId."
                             );
-                            $this->getCheckoutHelper()->restoreQuote(); //restore cart
-                            $this->getMessageManager()->addErrorMessage(
+                            $this->checkoutHelper->restoreQuote(); //restore cart
+                            $this->messageManager->addErrorMessage(
                                 __(
                                     "There was an error in the partial captured amount"
                                 )
@@ -367,14 +370,14 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                     );
 
                     if (!is_array($wzresponse)) {
-                        $this->getCheckoutHelper()->cancelCurrentOrder(
+                        $this->checkoutHelper->cancelCurrentOrder(
                             "Order #" .
                                 $order->getId() .
                                 " was rejected by Wizpay. Transaction ID" .
                                 $apiOrderId
                         ); // phpcs:ignore
-                        $this->getCheckoutHelper()->restoreQuote(); //restore cart
-                        $this->getMessageManager()->addErrorMessage(
+                        $this->checkoutHelper->restoreQuote(); //restore cart
+                        $this->messageManager->addErrorMessage(
                             __("There was an error in the Wizpay payment")
                         );
 

@@ -257,6 +257,9 @@ class Data extends AbstractHelper
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $error = true;
                 $errormessage = 'Error: Invalid Json Format received from Wizpay API. Please contact customer support in this regard!!'; // phpcs:ignore
+                $this->initiateWizpayLogger('>>>>>>>>response: ' . json_encode($response) . PHP_EOL);
+                $this->initiateWizpayLogger('>>>>>>>>error: ' . $errormessage . PHP_EOL);
+                $this->initiateWizpayLogger('--------------------------getWizpayapi end------------------------------------------');
                 return $errormessage;
             }
 
@@ -297,6 +300,9 @@ class Data extends AbstractHelper
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $error = true;
                 $errormessage = 'Error: Invalid Json Format received from Wizpay API. Please contact customer support in this regard!!'; // phpcs:ignore
+                $this->initiateWizpayLogger('>>>>>>>>response: ' . json_encode($response) . PHP_EOL);
+                $this->initiateWizpayLogger('>>>>>>>>error: ' . $errormessage . PHP_EOL);
+                $this->initiateWizpayLogger('--------------------------postWizpayapi end------------------------------------------');
                 return $errormessage;
             }
 
