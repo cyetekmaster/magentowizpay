@@ -26,6 +26,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
     private \Wizpay\Wizpay\Helper\Data $wizpay_data_helper;
     private \Magento\Sales\Model\Order $order;
     private \Wizpay\Wizpay\Helper\Checkout $checkoutHelper;
+    private \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender;
 
     public function __construct(
         \Magento\Framework\App\Request\Http $request,
@@ -38,7 +39,8 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
         \Wizpay\Wizpay\Helper\Data $wizpay_helper,
         \Magento\Sales\Model\Order $order,
-        \Wizpay\Wizpay\Helper\Checkout $checkout
+        \Wizpay\Wizpay\Helper\Checkout $checkout,
+        \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender
     ) {
         $this->request = $request;
         $this->session = $session;
@@ -51,10 +53,13 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         $this->wizpay_data_helper = $wizpay_helper;
         $this->order = $order;
         $this->checkoutHelper = $checkout;
+        $this->invoiceSender = $invoiceSender;
     }
 
     public function execute()
     {
+        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK START<<<<<<<<<<<<<<<<<<<<-------------------");
+        
         $callback_request_quote_id = $this->request->getParam("quoteId");
         $callback_request_mref = $this->request->getParam("mref");
         // get quote
@@ -62,7 +67,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
             ->create()
             ->loadByIdWithoutStore($callback_request_quote_id);
 
-        $this->logger->info("quote.getGrandTotal->" . $quote->getGrandTotal());
+        $this->logger->info("callback_request_quote_id->" . $callback_request_quote_id);
         $paymentMethod = $quote->getPayment();
         $additionalInformation = $paymentMethod->getAdditionalInformation();
 
@@ -92,10 +97,15 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
             $wz_api_key,
             $api_data
         );
+        
+        
+
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 
         if (!is_array($wzresponse)) {
             $errorMessage = "was rejected by Wizpay. Transaction #$wzTxnId.";
             $this->messageManager->addErrorMessage($errorMessage);
+            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK START<<<<<<<<<<<<<<<<<<<<-------------------");
             return $this->redirectFactory->create()->setPath("checkout/cart");
         } else {
             $orderStatus = $wzresponse["transactionStatus"];
@@ -111,7 +121,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                 $order = $this->order->load($orderId);
 
                 // update order id to api
-                $this->wizpay_data_helper->getOrderPaymentStatusApi(
+                $this->wizpay_data_helper->updateOrderIdApi(
                     $wz_api_key,
                     $wzTxnId,
                     $orderId
@@ -168,7 +178,11 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
 
                 $price_total_sum = array_sum($price_total);
                 $out_of_stock_p_details = implode(", ", $all_items);
-
+$this->logger->info("product_out_stocks->" . json_encode($product_out_stocks));
+$this->logger->info("get_subtotal->" . floatval($order->getGrandTotal()));
+$this->logger->info("capture_amount->" . (floatval($order->getGrandTotal()) - $price_total_sum));
+$this->logger->info("backordered->" . $backordered);
+$this->logger->info("ordered->" . $ordered);
                 if (!empty($product_out_stocks)) {
                     $get_subtotal = floatval($order->getGrandTotal());
                     $capture_amount = $get_subtotal - $price_total_sum;
@@ -185,7 +199,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                         $messageconc .=
                             "Wizpay Transaction ID (" . $apiOrderId . ")";
 
-                        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                        
                         $order = $objectManager
                             ->create("\Magento\Sales\Model\Order")
                             ->load($orderId); // phpcs:ignore
@@ -225,12 +239,20 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                             $out_of_stock_p_details
                         );
 
-                        if (!empty($success_url)) {
-                            $this->_redirect($success_url);
-                        } else {
-                            $this->_redirect("checkout/onepage/success", [
-                                "_secure" => false,
-                            ]);
+                        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END<<<<<<<<<<<<<<<<<<<<-------------------");
+
+                        $this->messageManager->addSuccessMessage(
+                            (string) __("Wizpay Transaction Completed")
+                        );
+
+                        if (!empty($success_url)){
+                            return $this->redirectFactory
+                                ->create()
+                                ->setPath($success_url);
+                        }else{
+                            return $this->redirectFactory
+                                ->create()
+                                ->setPath("checkout/onepage/success");
                         }
                     } else {
                         //$currency = get_woocommerce_currency();
@@ -250,6 +272,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                             $apiOrderId
                         );
 
+
                         if (!is_array($wzresponse)) {
                             $this->checkoutHelper->cancelCurrentOrder(
                                 "Order #" .
@@ -257,18 +280,21 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                                     " was rejected by Wizpay. Transaction #$wzTxnId."
                             );
                             $this->checkoutHelper->restoreQuote(); //restore cart
-                            $this->messageManager->addErrorMessage(
-                                __(
-                                    "There was an error in the partial captured amount"
-                                )
+                            
+                            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END<<<<<<<<<<<<<<<<<<<<-------------------");
+
+                            $this->messageManager->addSuccessMessage(
+                                (string) __("There was an error in the partial captured amount")
                             );
 
-                            if (!empty($failed_url)) {
-                                $this->_redirect($failed_url);
-                            } else {
-                                $this->_redirect("checkout/cart", [
-                                    "_secure" => false,
-                                ]);
+                            if (!empty($failed_url)){
+                                return $this->redirectFactory
+                                    ->create()
+                                    ->setPath($failed_url);
+                            }else{
+                                return $this->redirectFactory
+                                    ->create()
+                                    ->setPath("checkout/cart");
                             }
                         } else {
                             $msg =
@@ -345,12 +371,20 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                                 $out_of_stock_p_details
                             );
 
-                            if (!empty($success_url)) {
-                                $this->_redirect($success_url);
-                            } else {
-                                $this->_redirect("checkout/onepage/success", [
-                                    "_secure" => false,
-                                ]);
+                            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END<<<<<<<<<<<<<<<<<<<<-------------------");
+
+                            $this->messageManager->addSuccessMessage(
+                                (string) __("Wizpay Transaction Completed")
+                            );
+
+                            if (!empty($success_url)){
+                                return $this->redirectFactory
+                                    ->create()
+                                    ->setPath($success_url);
+                            }else{
+                                return $this->redirectFactory
+                                    ->create()
+                                    ->setPath("checkout/onepage/success");
                             }
                         }
                     } //if (empty($inStockitems ))
@@ -368,6 +402,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                         $wz_api_key,
                         $api_data
                     );
+                    
 
                     if (!is_array($wzresponse)) {
                         $this->checkoutHelper->cancelCurrentOrder(
@@ -445,12 +480,20 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                         );
 
                         $order->save();
-                        if (!empty($success_url)) {
-                            $this->_redirect($success_url);
-                        } else {
-                            $this->_redirect("checkout/onepage/success", [
-                                "_secure" => false,
-                            ]);
+                        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END<<<<<<<<<<<<<<<<<<<<-------------------");
+
+                        $this->messageManager->addSuccessMessage(
+                            (string) __("Wizpay Transaction Completed")
+                        );
+
+                        if (!empty($success_url)){
+                            return $this->redirectFactory
+                                ->create()
+                                ->setPath($success_url);
+                        }else{
+                            return $this->redirectFactory
+                                ->create()
+                                ->setPath("checkout/onepage/success");
                         }
                     } // API response check
                 } // End check if(!empty( $product_out_stocks ))
@@ -480,22 +523,41 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                 /*$order = $object_Manager->create('\Magento\Sales\Model\Order')->load($orderId);
                         $order->addStatusToHistory('pending', 'Put your comment here', false);
                         $order->save();*/
-                if (!empty($success_url)) {
-                    $this->_redirect($success_url);
-                } else {
-                    $this->_redirect("checkout/onepage/success", [
-                        "_secure" => false,
-                    ]);
+                $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END<<<<<<<<<<<<<<<<<<<<-------------------");
+
+                $this->messageManager->addSuccessMessage(
+                    (string) __("Wizpay Transaction Completed")
+                );
+
+                if (!empty($success_url)){
+                    return $this->redirectFactory
+                        ->create()
+                        ->setPath($success_url);
+                }else{
+                    return $this->redirectFactory
+                        ->create()
+                        ->setPath("checkout/onepage/success");
                 }
             }
         }
 
+        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END<<<<<<<<<<<<<<<<<<<<-------------------");
+
         $this->messageManager->addSuccessMessage(
             (string) __("Wizpay Transaction Completed")
         );
-        return $this->redirectFactory
-            ->create()
-            ->setPath("checkout/onepage/success");
+
+        if (!empty($success_url)){
+            return $this->redirectFactory
+                ->create()
+                ->setPath($success_url);
+        }else{
+            return $this->redirectFactory
+                ->create()
+                ->setPath("checkout/onepage/success");
+        }
+
+        
     }
 
     private function customAdminEmail($orderId, $out_of_stock_p_details)
