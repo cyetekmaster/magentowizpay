@@ -8,6 +8,7 @@ use Magento\Quote\Model\Quote;
 
 use \Wizpay\Wizpay\Helper\Checkout;
 
+
 class PlaceOrderProcessor
 {
     private \Magento\Quote\Api\CartManagementInterface $cartManagement;
@@ -16,6 +17,7 @@ class PlaceOrderProcessor
     private \Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface $paymentDataObjectFactory;
     private \Psr\Log\LoggerInterface $logger;
     private \Wizpay\Wizpay\Helper\Data $wizpay_data_helper;
+    private \Magento\Customer\Model\Session $customerSession;
 
     public function __construct(
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
@@ -23,7 +25,9 @@ class PlaceOrderProcessor
         \Wizpay\Wizpay\Model\Order\Payment\QuotePaidStorage $quotePaidStorage,
         \Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface $paymentDataObjectFactory,
         \Psr\Log\LoggerInterface $logger,
-        \Wizpay\Wizpay\Helper\Data $wizpay_helper
+        \Wizpay\Wizpay\Helper\Data $wizpay_helper,
+        \Magento\Framework\View\Element\Template\Context $context,
+        \Magento\Customer\Model\Session $customerSession
     ) {
         $this->cartManagement = $cartManagement;
         $this->cancelOrderProcessor = $cancelOrderProcessor;
@@ -31,11 +35,15 @@ class PlaceOrderProcessor
         $this->paymentDataObjectFactory = $paymentDataObjectFactory;
         $this->logger = $logger;
         $this->wizpay_data_helper = $wizpay_helper;
+        $this->customerSession = $customerSession;
     }
 
     public function execute(Quote $quote, string $wizpayOrderToken)
     {
         try {
+
+            $this->logger->info("-------------->>>>>>>>>>>>>>>>Wizpay PlaceOrderProcessor start<<<<<<<<<<<<<<--------------");
+
             $uniqid = hash('md5', time() . $quote->getId());
             $merchantReference =  'MER' . $uniqid . '-' . $quote->getId();
             // get wizpay url
@@ -62,6 +70,8 @@ class PlaceOrderProcessor
                 $paymentMethod->save();
                 $quote->save();
 
+
+                 $this->logger->info("-------------->>>>>>>>>>>>>>>>Wizpay PlaceOrderProcessor end<<<<<<<<<<<<<<--------------");
                 // return retirect url
                 return $redirect_url;
             }else{
@@ -108,6 +118,7 @@ class PlaceOrderProcessor
         $quoteId = $quote->getId();
         $billingaddress = $quote->getBillingAddress();
         $getStreet = $billingaddress->getStreet();
+        $shipping_address = $quote->getShippingAddress();
 
         
         $successurl = $this->wizpay_data_helper->getCompleteUrl();
@@ -116,6 +127,7 @@ class PlaceOrderProcessor
         $success_url =  $successurl . '?mref=' . $merchantReference . '&quoteId=' . $quoteId;
         $fail_url =  $cancelurl . '?mref=' . $merchantReference . '&quoteId=' . $quoteId;
 
+        $current_customer = $this->customerSession->getCustomer();
 
         $getStoreCurrency = 'AUD';
         /*if ($getStoreCurrency != 'AUD'){
@@ -162,6 +174,28 @@ class PlaceOrderProcessor
             }
         }
 
+        $first_name = $billingaddress->getFirstname();
+        $last_name = $billingaddress->getLastname();
+
+        if($first_name == null || empty($first_name)){
+            $first_name = $shipping_address->getFirstname();
+             $this->logger->info("firstname and last name from shipping address");
+        }
+
+        if($last_name == null || empty($last_name)){
+            $last_name = $shipping_address->getLastname();
+        }
+
+
+        if($first_name == null || empty($first_name)){
+            $first_name = $current_customer->getFirstname();
+            $this->logger->info("firstname and last name from customer setting");
+        }
+
+        if($last_name == null || empty($last_name)){
+            $last_name = $current_customer->getLastname();
+        }
+
         $data = [
             "amount"=> [
                 "amount"=> number_format(floatval($quote->getGrandTotal()), 2),
@@ -169,12 +203,12 @@ class PlaceOrderProcessor
             ],
             "consumer"=> [
                 "phoneNumber"=> $billingaddress->getTelephone(),
-                "givenNames"=> $quote->getCustomerFirstname(),
-                "surname"=> $quote->getCustomerLastname(),
+                "givenNames"=> $first_name,
+                "surname"=> $last_name,
                 "email"=> $quote->getCustomerEmail()
             ],
             "billing"=> [
-                "name"=> $quote->getCustomerFirstname(),
+                "name"=> $first_name,
                 "line1"=> $addlineOne,
                 "line2"=> $addlineTwo,
                 "area1"=> $billingaddress->getCity(),
@@ -185,7 +219,7 @@ class PlaceOrderProcessor
                 "phoneNumber"=> $billingaddress->getTelephone()
             ],
             "shipping"=> [
-                "name"=> $quote->getCustomerFirstname(),
+                "name"=> $first_name,
                 "line1"=> $addlineOne,
                 "line2"=> $addlineTwo,
                 "area1"=> $billingaddress->getCity(),
@@ -209,9 +243,9 @@ class PlaceOrderProcessor
                     "displayName"=> null,
                     "discountNumber"=> 0,
                     "amount"=> [
-                        "amount"=> number_format(floatval($quote->getDiscountAmount()), 2),
-                        "currency"=> $getStoreCurrency
-                    ]
+                            "amount"=> number_format(floatval($quote->getDiscountAmount()), 2),
+                            "currency"=> $getStoreCurrency
+                        ]
                     ]
                 ],
             "merchant"=> [
@@ -228,7 +262,7 @@ class PlaceOrderProcessor
                 "currency"=> $getStoreCurrency
             ],
             "shippingAmount"=> [
-                "amount"=> number_format(floatval($quote->getShippingAmount()), 2),
+                "amount"=> number_format(floatval($shipping_address->getShippingAmount()), 2),
                 "currency"=> $getStoreCurrency
             ]
         ];
