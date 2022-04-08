@@ -105,7 +105,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         if (!is_array($wzresponse)) {
             $errorMessage = "was rejected by Wizpay. Transaction #$wzTxnId.";
             $this->messageManager->addErrorMessage($errorMessage);
-            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK START<<<<<<<<<<<<<<<<<<<<-------------------");
+            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK START 108<<<<<<<<<<<<<<<<<<<<-------------------");
             return $this->redirectFactory->create()->setPath("checkout/cart");
         } else {
             $orderStatus = $wzresponse["transactionStatus"];
@@ -115,8 +115,10 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                 "APPROVED" == $orderStatus &&
                 "AUTH_APPROVED" == $paymentStatus
             ) {
+                $this->logger->info("Before order create");
                 // convert quote to order
                 $orderId = $this->cartManagement->placeOrder($quote->getId());
+                $this->logger->info("After order create");
                 // get order
                 $order = $this->order->load($orderId);
 
@@ -200,9 +202,6 @@ $this->logger->info("ordered->" . $ordered);
                             "Wizpay Transaction ID (" . $apiOrderId . ")";
 
                         
-                        $order = $objectManager
-                            ->create("\Magento\Sales\Model\Order")
-                            ->load($orderId); // phpcs:ignore
                         $mailmsg = $out_of_stock_p_details . " " . $messageconc;
                         if (count($product_out_stocks) > 1) {
                             $order->addStatusToHistory(
@@ -239,7 +238,7 @@ $this->logger->info("ordered->" . $ordered);
                             $out_of_stock_p_details
                         );
 
-                        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END<<<<<<<<<<<<<<<<<<<<-------------------");
+                        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 244<<<<<<<<<<<<<<<<<<<<-------------------");
 
                         $this->messageManager->addSuccessMessage(
                             (string) __("Wizpay Transaction Completed")
@@ -281,7 +280,7 @@ $this->logger->info("ordered->" . $ordered);
                             );
                             $this->checkoutHelper->restoreQuote(); //restore cart
                             
-                            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END<<<<<<<<<<<<<<<<<<<<-------------------");
+                            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 286<<<<<<<<<<<<<<<<<<<<-------------------");
 
                             $this->messageManager->addSuccessMessage(
                                 (string) __("There was an error in the partial captured amount")
@@ -371,7 +370,7 @@ $this->logger->info("ordered->" . $ordered);
                                 $out_of_stock_p_details
                             );
 
-                            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END<<<<<<<<<<<<<<<<<<<<-------------------");
+                            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 376<<<<<<<<<<<<<<<<<<<<-------------------");
 
                             $this->messageManager->addSuccessMessage(
                                 (string) __("Wizpay Transaction Completed")
@@ -415,7 +414,7 @@ $this->logger->info("ordered->" . $ordered);
                         $this->messageManager->addErrorMessage(
                             __("There was an error in the Wizpay payment")
                         );
-
+                        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 420<<<<<<<<<<<<<<<<<<<<-------------------");
                         if (!empty($failed_url)) {
                             $this->_redirect($failed_url);
                         } else {
@@ -480,7 +479,7 @@ $this->logger->info("ordered->" . $ordered);
                         );
 
                         $order->save();
-                        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END<<<<<<<<<<<<<<<<<<<<-------------------");
+                        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 485<<<<<<<<<<<<<<<<<<<<-------------------");
 
                         $this->messageManager->addSuccessMessage(
                             (string) __("Wizpay Transaction Completed")
@@ -497,87 +496,36 @@ $this->logger->info("ordered->" . $ordered);
                         }
                     } // API response check
                 } // End check if(!empty( $product_out_stocks ))
-            } else {
-                $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-                $order = $objectManager
-                    ->create("\Magento\Sales\Model\Order")
-                    ->load($orderId); // phpcs:ignore
-                $currentStatus = $order->getState();
-                $status = "pending_capture";
-                $comment =
-                    "In order to capture this transaction, please make the partial capture manually.";
-                $comment .= " Wizpay Transaction ID (" . $wzTxnId . ")";
-                $order->addStatusToHistory("pending_capture", $comment, false);
-                $isNotified = false;
-                $order->setState($status)->setStatus($status);
-                $payment = $order->getPayment();
-                $payment->setTransactionId($wzTxnId);
-                $payment->setIsTransactionClosed(false);
-                $payment->addTransaction(
-                    \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH,
-                    null,
-                    0
-                );
-                $order->save();
-
-                /*$order = $object_Manager->create('\Magento\Sales\Model\Order')->load($orderId);
-                        $order->addStatusToHistory('pending', 'Put your comment here', false);
-                        $order->save();*/
-                $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END<<<<<<<<<<<<<<<<<<<<-------------------");
-
-                $this->messageManager->addSuccessMessage(
-                    (string) __("Wizpay Transaction Completed")
-                );
-
-                if (!empty($success_url)){
-                    return $this->redirectFactory
-                        ->create()
-                        ->setPath($success_url);
-                }else{
-                    return $this->redirectFactory
-                        ->create()
-                        ->setPath("checkout/onepage/success");
-                }
-            }
+            } 
         }
 
-        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END<<<<<<<<<<<<<<<<<<<<-------------------");
-
-        $this->messageManager->addSuccessMessage(
-            (string) __("Wizpay Transaction Completed")
-        );
-
-        if (!empty($success_url)){
-            return $this->redirectFactory
-                ->create()
-                ->setPath($success_url);
-        }else{
-            return $this->redirectFactory
-                ->create()
-                ->setPath("checkout/onepage/success");
-        }
+        // all other statuc return failed
+        $errorMessage = "was rejected by Wizpay. Transaction #$wzTxnId.";
+        $this->messageManager->addErrorMessage($errorMessage);
+        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK START 508<<<<<<<<<<<<<<<<<<<<-------------------");
+        return $this->redirectFactory->create()->setPath("checkout/cart");
 
         
     }
 
     private function customAdminEmail($orderId, $out_of_stock_p_details)
     {
-        $email = $this->wizpay_data_helper->getConfig("trans_email/ident_general/email");
-        $mailmsg =
-            $out_of_stock_p_details .
-            " from the order are not in stock, so payment was not captured. You need to capture the payment manually after it is back in stock."; // phpcs:ignore
-        $mailTransportFactory = $this->wizpay_data_helper->mailTransportFactory();
-        $message = new \Magento\Framework\Mail\Message();
-        /*$message->setFrom($email);*/ // phpcs:ignore
-        $message->addTo($email);
-        $message->setSubject(
-            "New Order #" . $orderId . " Placed With Out Of Stock Items"
-        );
-        $message->setBody($mailmsg);
-        $transport = $mailTransportFactory->create(["message" => $message]);
-        //print_r($transport);
-        return;
-        $transport->sendMessage(); // phpcs:ignore
+        // $email = $this->wizpay_data_helper->getConfig("trans_email/ident_general/email");
+        // $mailmsg =
+        //     $out_of_stock_p_details .
+        //     " from the order are not in stock, so payment was not captured. You need to capture the payment manually after it is back in stock."; // phpcs:ignore
+        // $mailTransportFactory = $this->wizpay_data_helper->mailTransportFactory();
+        // $message = new \Magento\Framework\Mail\Message();
+        // /*$message->setFrom($email);*/ // phpcs:ignore
+        // $message->addTo($email);
+        // $message->setSubject(
+        //     "New Order #" . $orderId . " Placed With Out Of Stock Items"
+        // );
+        // $message->setBody($mailmsg);
+        // $transport = $mailTransportFactory->create(["message" => $message]);
+        // //print_r($transport);
+        // return;
+        // $transport->sendMessage(); // phpcs:ignore
     }
 
     private function statusExists($orderStatus)

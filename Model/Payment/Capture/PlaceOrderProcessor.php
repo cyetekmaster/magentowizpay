@@ -156,6 +156,12 @@ class PlaceOrderProcessor
             $addlineTwo = $getStreet[1];
         }
 
+        $email = $quote->getCustomerEmail();
+        if(empty($email) || $email == null){
+            $email = $billingaddress->getEmail();
+            $quote->setCustomerEmail($email);
+        }
+
         //Loop through each item and fetch data
         $items = $quote->getAllVisibleItems();
 
@@ -205,7 +211,7 @@ class PlaceOrderProcessor
                 "phoneNumber"=> $billingaddress->getTelephone(),
                 "givenNames"=> $first_name,
                 "surname"=> $last_name,
-                "email"=> $quote->getCustomerEmail()
+                "email"=> $email
             ],
             "billing"=> [
                 "name"=> $first_name,
