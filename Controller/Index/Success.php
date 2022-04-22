@@ -14,19 +14,19 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
     const CHECKOUT_STATUS_CANCELLED = "CANCELLED";
     const CHECKOUT_STATUS_SUCCESS = "SUCCESS";
 
-    private \Magento\Framework\App\Request\Http $request;
-    private \Magento\Checkout\Model\Session $session;
-    private \Magento\Framework\Controller\Result\RedirectFactory $redirectFactory;
-    private \Magento\Framework\Message\ManagerInterface $messageManager;
-    private \Wizpay\Wizpay\Model\Payment\Capture\PlaceOrderProcessor $placeOrderProcessor;
-    private \Magento\Quote\Api\CartManagementInterface $cartManagement;
-    private \Psr\Log\LoggerInterface $logger;
-    private \Magento\Quote\Model\QuoteFactory $quoteFactory;
-    private \Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface $paymentDataObjectFactory;
-    private \Wizpay\Wizpay\Helper\Data $wizpay_data_helper;
-    private \Magento\Sales\Model\Order $order;
-    private \Wizpay\Wizpay\Helper\Checkout $checkoutHelper;
-    private \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender;
+    private $request;
+    private $session;
+    private $redirectFactory;
+    private $messageManager;
+    private $placeOrderProcessor;
+    private $cartManagement;
+    private $logger;
+    private $quoteFactory;
+    private $paymentDataObjectFactory;
+    private $wizpay_data_helper;
+    private $order;
+    private $checkoutHelper;
+    private $invoiceSender;
 
     public function __construct(
         \Magento\Framework\App\Request\Http $request,

@@ -11,13 +11,13 @@ use \Wizpay\Wizpay\Helper\Checkout;
 
 class PlaceOrderProcessor
 {
-    private \Magento\Quote\Api\CartManagementInterface $cartManagement;
-    private \Wizpay\Wizpay\Model\Payment\Capture\CancelOrderProcessor $cancelOrderProcessor;
-    private \Wizpay\Wizpay\Model\Order\Payment\QuotePaidStorage $quotePaidStorage;
-    private \Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface $paymentDataObjectFactory;
-    private \Psr\Log\LoggerInterface $logger;
-    private \Wizpay\Wizpay\Helper\Data $wizpay_data_helper;
-    private \Magento\Customer\Model\Session $customerSession;
+    private $cartManagement;
+    private $cancelOrderProcessor;
+    private $quotePaidStorage;
+    private $paymentDataObjectFactory;
+    private $logger;
+    private $wizpay_data_helper;
+    private $customerSession;
 
     public function __construct(
         \Magento\Quote\Api\CartManagementInterface $cartManagement,

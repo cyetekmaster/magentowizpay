@@ -4,7 +4,7 @@ namespace Wizpay\Wizpay\Observer;
 
 class SetQuoteIsPaidByWizpay implements \Magento\Framework\Event\ObserverInterface
 {
-    private \Wizpay\Wizpay\Model\Order\Payment\QuotePaidStorage $quotePaidStorage;
+    private $quotePaidStorage;
 
     public function __construct(
         \Wizpay\Wizpay\Model\Order\Payment\QuotePaidStorage $quotePaidStorage

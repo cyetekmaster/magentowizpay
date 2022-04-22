@@ -15,13 +15,13 @@ class Index implements \Magento\Framework\App\Action\HttpGetActionInterface
     const CHECKOUT_STATUS_CANCELLED = 'CANCELLED';
     const CHECKOUT_STATUS_SUCCESS = 'SUCCESS';
 
-    private \Magento\Framework\App\RequestInterface $request;
-    private \Magento\Checkout\Model\Session $session;
-    private \Magento\Framework\Controller\Result\RedirectFactory $redirectFactory;
-    private \Magento\Framework\Message\ManagerInterface $messageManager;
-    private \Wizpay\Wizpay\Model\Payment\Capture\PlaceOrderProcessor $placeOrderProcessor;
-    private \Magento\Payment\Gateway\CommandInterface $validateCheckoutDataCommand;
-    private \Psr\Log\LoggerInterface $logger;
+    private $request;
+    private $session;
+    private $redirectFactory;
+    private $messageManager;
+    private $placeOrderProcessor;
+    private $validateCheckoutDataCommand;
+    private $logger;
 
     public function __construct(
         \Magento\Framework\App\RequestInterface $request,
