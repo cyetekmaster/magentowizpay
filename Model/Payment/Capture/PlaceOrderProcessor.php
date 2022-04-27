@@ -48,6 +48,7 @@ class PlaceOrderProcessor
             $merchantReference =  'MER' . $uniqid . '-' . $quote->getId();
             // get wizpay url
             $wzresponse = $this->getOrderData($quote, $merchantReference);
+          
 
             if (isset($wzresponse) && is_array($wzresponse) && $wzresponse['responseCode'] != null
                 && '200' == $wzresponse['responseCode']){
@@ -134,13 +135,13 @@ class PlaceOrderProcessor
             return;
         }*/
         if (!isset($billingaddress)) {
-
-            return;
+            $this->logger->critical('Order placement is failed with error: no billing address' );
+            return null;
         }
 
         if (!isset($getStreet[0])) {
-            return;
-
+            $this->logger->critical('Order placement is failed with error: no billing address - street' );
+            return null;
         } else {
 
             $addlineOne = $getStreet[0];
@@ -155,12 +156,26 @@ class PlaceOrderProcessor
 
             $addlineTwo = $getStreet[1];
         }
+        $email = '';
 
-        $email = $quote->getCustomerEmail();
-        if(empty($email) || $email == null){
+        if($quote->getCustomerEmail() != null && !empty($quote->getCustomerEmail())){
+            $email = $quote->getCustomerEmail();
+            $quote->setCustomerEmail($email);
+        }
+        else if($billingaddress->getEmail() != null && !empty($billingaddress->getEmail())){
             $email = $billingaddress->getEmail();
             $quote->setCustomerEmail($email);
         }
+        else if(isset($shipping_address) && $shipping_address->getEmail() != null && !empty($shipping_address->getEmail())){
+            $email = $shipping_address->getEmail();
+            $quote->setCustomerEmail($email);
+        }
+
+        if($email == null || empty($email) || $email == ''){
+            $this->logger->critical('Order placement is failed with error: no email' );
+            return null;
+        }
+
 
         //Loop through each item and fetch data
         $items = $quote->getAllVisibleItems();
