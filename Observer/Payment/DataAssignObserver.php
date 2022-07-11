@@ -4,11 +4,11 @@ namespace Wizpay\Wizpay\Observer\Payment;
 
 class DataAssignObserver extends \Magento\Payment\Observer\AbstractDataAssignObserver
 {
-    private array $additionalInformationList = [
+    private $additionalInformationList = array(
         \Wizpay\Wizpay\Helper\Api\Data\CheckoutInterface::WIZPAY_TOKEN,
         \Wizpay\Wizpay\Helper\Api\Data\CheckoutInterface::WIZPAY_AUTH_TOKEN_EXPIRES,
         \Wizpay\Wizpay\Helper\Api\Data\CheckoutInterface::WIZPAY_REDIRECT_CHECKOUT_URL
-    ];
+    );
 
     public function execute(\Magento\Framework\Event\Observer $observer): void
     {
