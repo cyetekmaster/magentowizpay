@@ -15,15 +15,18 @@ class SalesOrderCreditmemoSave implements ObserverInterface
 
     protected $messageManager;
     protected $resultRedirectFactory;
+    private $logger;
 
     public function __construct(
         Data $helper,
         \Magento\Framework\Message\ManagerInterface $messageManager,
-        \Magento\Framework\Controller\Result\RedirectFactory $resultRedirectFactory
+        \Magento\Framework\Controller\Result\RedirectFactory $resultRedirectFactory,
+        \Psr\Log\LoggerInterface $logger
     ) {
         $this->helper = $helper;
         $this->messageManager = $messageManager;
         $this->resultRedirectFactory = $resultRedirectFactory;
+        $this->logger = $logger;
     }
 
     public function execute(Observer $observer)
@@ -44,13 +47,38 @@ class SalesOrderCreditmemoSave implements ObserverInterface
 
         if ($payment->getMethod() == 'wizpay') {
 
+            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY SalesOrderCreditmemoSave Start<<<<<<<<<<<<<<<<<<<<-------------------");
+
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
             $orderId = $order->getEntityId();
             $order = $objectManager->create('\Magento\Sales\Model\OrderRepository')->get($orderId); // phpcs:ignore
             $additionalInformation = $order->getPayment()->getAdditionalInformation();
+            
+            $this->logger->info(print_r($additionalInformation, true));
+
+            if(!array_key_exists('token',  $additionalInformation) ){
+                throw new \Magento\Framework\Exception\CouldNotDeleteException(__('No valid token.')); // phpcs:ignore
+            }
+
+            if(!array_key_exists('transactionId',  $additionalInformation)){
+                throw new \Magento\Framework\Exception\CouldNotDeleteException(__('No valid transactionId.')); // phpcs:ignore
+            }   
+
+            if(!array_key_exists('merchantReference',  $additionalInformation) && !array_key_exists('mer',  $additionalInformation)){
+                throw new \Magento\Framework\Exception\CouldNotDeleteException(__('No valid merchantReference.')); // phpcs:ignore
+            }
+
             $wz_token = $additionalInformation['token'];
             $apiOrderId = $additionalInformation['transactionId'];
-            $merchantReference = $additionalInformation['merchantReference'];
+
+            $merchantReference = '';
+            if(array_key_exists('merchantReference',  $additionalInformation)){
+                $merchantReference = $additionalInformation['merchantReference'];// phpcs:ignore
+            }
+            if(array_key_exists('mer',  $additionalInformation)){
+                $merchantReference = $additionalInformation['mer'];// phpcs:ignore
+            }
+            
             $paymentEventMerchantReference = 'REF-' . $orderId;
             $wz_api_key = $this->helper->getConfig('payment/wizpay/api_key');
             $uniqid = hash('md5', time() . $orderId);
@@ -90,6 +118,8 @@ class SalesOrderCreditmemoSave implements ObserverInterface
                 $order->addStatusHistoryComment(__('Wizpay Payment Refund Authorised. Wizpay Transaction ID (' . $apiOrderId . ') Amount: $' . $creditmemo->getBaseGrandTotal()))->save(); // phpcs:ignore
                 $this->messageManager->addSuccess(__("Refund has been created successfully."));
             }
+
+            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY SalesOrderCreditmemoSave end<<<<<<<<<<<<<<<<<<<<-------------------");
         }
     }
 }
