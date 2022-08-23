@@ -105,21 +105,50 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         if (!is_array($wzresponse)) {
             $errorMessage = "was rejected by Wizpay. Transaction #$wzTxnId.";
             $this->messageManager->addErrorMessage($errorMessage);
-            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK START 108<<<<<<<<<<<<<<<<<<<<-------------------");
+            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 108<<<<<<<<<<<<<<<<<<<<-------------------");
             return $this->redirectFactory->create()->setPath("checkout/cart");
         } else {
             $orderStatus = $wzresponse["transactionStatus"];
             $paymentStatus = $wzresponse["paymentStatus"];
             $apiOrderId = $wzresponse["transactionId"];
-            if (
-                ("APPROVED" == $orderStatus &&
-                "AUTH_APPROVED" == $paymentStatus)
-                ||
-                ("COMPLETED" == $orderStatus &&
-                "CAPTURED" == $paymentStatus)
-            ) {
+            if ("APPROVED" == $orderStatus && "AUTH_APPROVED" == $paymentStatus)
+            {
                 $this->logger->info("Before order create");
-                // convert quote to order
+                // 1. check customer email address and other info
+                if($quote->getCustomerEmail() == null || empty($quote->getCustomerEmail())){
+                    // get customer email from response
+                    if($wzresponse["transactionDetails"] != null && $wzresponse["transactionDetails"]["consumer"] != null && $wzresponse["transactionDetails"]["consumer"]["email"] != null
+                        && !empty($wzresponse["transactionDetails"]["consumer"]["email"])){
+                            $quote->setCustomerEmail($wzresponse["transactionDetails"]["consumer"]["email"]);
+                    }else{
+                        $errorMessage = "No custmer has been found. Transaction #$wzTxnId.";
+                        $this->messageManager->addErrorMessage($errorMessage);
+                        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 126<<<<<<<<<<<<<<<<<<<<-------------------");
+                        return $this->redirectFactory->create()->setPath("checkout/cart");
+                    }
+                }
+                // 2. check order items
+                if($wzresponse["transactionDetails"] != null && $wzresponse["transactionDetails"]["items"] != null && is_array($wzresponse["transactionDetails"]["items"])){
+                    $order_items = $quote->getAllVisibleItems();
+                    foreach($wzresponse["transactionDetails"]["items"] as $wiz_item){
+                        $order_item_found = false;
+                        foreach ($order_items as $item) {
+                            if ($item->getData() && $item->getSku() == $wiz_item['sku']) {
+                                $order_item_found = true;
+                                break;
+                            }
+                        }
+
+                        // if not found in quote then add it
+                        if(!$order_item_found){
+                            // add product into quote
+                        }
+                    }                    
+                }
+                
+
+
+                // 3. convert quote to order
                 $orderId = $this->cartManagement->placeOrder($quote->getId());
                 $this->logger->info("After order create");
                 // get order
@@ -242,6 +271,24 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                     } // API response check
                  // End check if(!empty( $product_out_stocks ))
             } 
+            else if("COMPLETED" == $orderStatus &&  "CAPTURED" == $paymentStatus){
+                // do nothing 
+                $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 244<<<<<<<<<<<<<<<<<<<<-------------------");
+
+                $this->messageManager->addSuccessMessage(
+                    (string) __("Wizpay Transaction Completed")
+                );
+
+                if (!empty($success_url)){
+                    return $this->redirectFactory
+                        ->create()
+                        ->setPath($success_url);
+                }else{
+                    return $this->redirectFactory
+                        ->create()
+                        ->setPath("checkout/onepage/success");
+                }
+            }
         }
 
         // all other statuc return failed
