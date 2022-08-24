@@ -308,7 +308,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         // all other statuc return failed
         $errorMessage = "was rejected by Wizpay. Transaction #$wzTxnId.";
         $this->messageManager->addErrorMessage($errorMessage);
-        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK START 508<<<<<<<<<<<<<<<<<<<<-------------------");
+        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 508<<<<<<<<<<<<<<<<<<<<-------------------");
         return $this->redirectFactory->create()->setPath("checkout/cart");
 
         
