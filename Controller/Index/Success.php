@@ -122,11 +122,12 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
             {
                 $this->logger->info("Before order create");
                 // 1. check customer email address and other info
-                if($quote->getCustomerEmail() == null || empty($quote->getCustomerEmail())){
+                if($quote->getCustomerEmail() == null || empty($quote->getCustomerEmail()) || $quote->getCustomerIsGuest()){
                     // get customer email from response
                     if($wzresponse["transactionDetails"] != null && $wzresponse["transactionDetails"]["consumer"] != null && $wzresponse["transactionDetails"]["consumer"]["email"] != null
                         && !empty($wzresponse["transactionDetails"]["consumer"]["email"])){
                             $quote->setCustomerEmail($wzresponse["transactionDetails"]["consumer"]["email"]);
+                            $quote->setCustomerIsGuest(true);
                     }else{
                         $errorMessage = "No custmer has been found. Transaction #$wzTxnId.";
                         $this->messageManager->addErrorMessage($errorMessage);
