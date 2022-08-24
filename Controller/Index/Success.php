@@ -27,6 +27,8 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
     private $order;
     private $checkoutHelper;
     private $invoiceSender;
+    protected $quoteRepository;
+    private $productRepository; 
 
     public function __construct(
         \Magento\Framework\App\Request\Http $request,
@@ -40,7 +42,9 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         \Wizpay\Wizpay\Helper\Data $wizpay_helper,
         \Magento\Sales\Model\Order $order,
         \Wizpay\Wizpay\Helper\Checkout $checkout,
-        \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender
+        \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
+        \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
+        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository
     ) {
         $this->request = $request;
         $this->session = $session;
@@ -54,6 +58,8 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         $this->order = $order;
         $this->checkoutHelper = $checkout;
         $this->invoiceSender = $invoiceSender;
+        $this->quoteRepository = $quoteRepository;
+        $this->productRepository = $productRepository;
     }
 
     public function execute()
@@ -63,9 +69,10 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         $callback_request_quote_id = $this->request->getParam("quoteId");
         $callback_request_mref = $this->request->getParam("mref");
         // get quote
-        $quote = $this->quoteFactory
-            ->create()
-            ->loadByIdWithoutStore($callback_request_quote_id);
+        // $quote = $this->quoteFactory
+        //     ->create()
+        //     ->loadByIdWithoutStore($callback_request_quote_id);
+        $quote = $this->quoteRepository->get($callback_request_quote_id);
 
         $this->logger->info("callback_request_quote_id->" . $callback_request_quote_id);
         $paymentMethod = $quote->getPayment();
@@ -142,10 +149,17 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                         // if not found in quote then add it
                         if(!$order_item_found){
                             // add product into quote
+                            $this->logger->info("add ->Product:" . $wiz_item['sku'] . ' to quote.');
+                            $product = $this->productRepository->get($wiz_item['sku']);
+                            if(isset($product)){
+                                $quote->addProduct($product, intval($wiz_item['quantity'], 1));
+                            }
                         }
                     }                    
                 }
                 
+                // update quote
+                $this->quoteRepository->save($quote);
 
 
                 // 3. convert quote to order
