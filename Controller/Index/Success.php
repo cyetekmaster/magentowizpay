@@ -29,6 +29,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
     private $invoiceSender;
     protected $quoteRepository;
     private $productRepository; 
+    private $customerRepository;
 
     public function __construct(
         \Magento\Framework\App\Request\Http $request,
@@ -44,7 +45,8 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         \Wizpay\Wizpay\Helper\Checkout $checkout,
         \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
         \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
-        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository
+        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
+        \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
     ) {
         $this->request = $request;
         $this->session = $session;
@@ -60,6 +62,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         $this->invoiceSender = $invoiceSender;
         $this->quoteRepository = $quoteRepository;
         $this->productRepository = $productRepository;
+        $this->customerRepository = $customerRepository;
     }
 
     public function execute()
@@ -121,8 +124,19 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
             if ("APPROVED" == $orderStatus && "AUTH_APPROVED" == $paymentStatus)
             {
                 $this->logger->info("Before order create");
+                $this->logger->info("Customer email = " . $quote->getCustomerEmail());
+                $customer = null;
+                try{
+                    $customer = $this->customerRepository->get($quote->getCustomerEmail());
+                }catch (\Magento\Framework\Exception\NoSuchEntityException $e){
+                   $customer = null;
+                }
+                //$this->logger->info("customer=" . print_r($customer, true));
+
+
                 // 1. check customer email address and other info
-                if($quote->getCustomerEmail() == null || empty($quote->getCustomerEmail()) || $quote->getCustomerIsGuest()){
+                if(!isset($customer) || $quote->getCustomerEmail() == null || empty($quote->getCustomerEmail()) || $quote->getCustomerIsGuest()){
+                    $this->logger->info("Create order as guest");
                     // get customer email from response
                     if($wzresponse["transactionDetails"] != null && $wzresponse["transactionDetails"]["consumer"] != null && $wzresponse["transactionDetails"]["consumer"]["email"] != null
                         && !empty($wzresponse["transactionDetails"]["consumer"]["email"])){
@@ -134,6 +148,10 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
                         $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 126<<<<<<<<<<<<<<<<<<<<-------------------");
                         return $this->redirectFactory->create()->setPath("checkout/cart");
                     }
+                }
+                else{
+                    $this->logger->info("Create order as register customer");
+                    $quote->setCustomer($customer);
                 }
                 // 2. check order items
                 if($wzresponse["transactionDetails"] != null && $wzresponse["transactionDetails"]["items"] != null && is_array($wzresponse["transactionDetails"]["items"])){
