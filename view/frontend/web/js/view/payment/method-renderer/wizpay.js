@@ -67,6 +67,9 @@ define(
             getUrlc: function () {
                 return window.checkoutConfig.payment.wizpay.urls;
             },
+            getTitle : function(){
+                return window.checkoutConfig.payment.wizpay.wizpayTitle;
+            },
 
             totalamount: function () {
                 var price = quote.getTotals()().base_grand_total;
