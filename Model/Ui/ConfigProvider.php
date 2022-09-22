@@ -11,6 +11,8 @@ use \Wizpay\Wizpay\Helper\Data;
 use Magento\Framework\View\Asset\Repository;
 use Magento\Checkout\Model\Session;
 use Magento\Backend\Model\Session\Quote as adminQuoteSession;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**
  * Class ConfigProvider
@@ -18,6 +20,13 @@ use Magento\Backend\Model\Session\Quote as adminQuoteSession;
 class ConfigProvider implements ConfigProviderInterface // phpcs:ignore
 {
     const CODE = 'wizpay';
+
+     /**
+     * Get country path
+     */
+    const COUNTRY_CODE_PATH = 'general/country/default';
+    const MERCHANT_COUNTRY_CODE_PATH = 'paypal/general/merchant_country';
+
     /**
      * @var Repository
      */
@@ -42,7 +51,8 @@ class ConfigProvider implements ConfigProviderInterface // phpcs:ignore
         Session $checkoutSession,
         Data $helper,
         adminQuoteSession $adminQuoteSession,
-        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository
+        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
+        \Magento\Framework\App\Config\ScopeConfigInterface $config
     ) {
         $this->assetRepository = $assetRepository;
         $this->orderRepository = $orderRepository;
@@ -55,6 +65,7 @@ class ConfigProvider implements ConfigProviderInterface // phpcs:ignore
             $this->_session = $checkoutSession;
         }
         $this->_quote = $this->_session->getQuote();
+        $this->scopeConfig = $config;
     }
 
     public function getConfig()
@@ -70,6 +81,23 @@ class ConfigProvider implements ConfigProviderInterface // phpcs:ignore
 
         $wizpayTitle = $this->helper->getConfig('payment/wizpay/title');
 
+        $default_country = $this->scopeConfig->getValue(
+            self::COUNTRY_CODE_PATH,
+            ScopeInterface::SCOPE_WEBSITES
+        );
+
+        $merchant_country = $this->scopeConfig->getValue(
+            self::MERCHANT_COUNTRY_CODE_PATH,
+            ScopeInterface::SCOPE_WEBSITES
+        );
+
+        
+        if(isset($merchant_country) && !is_null($merchant_country) && !empty($merchant_country)){
+            $default_country = $merchant_country;
+        }
+
+
+
         return [
             'payment' => [
                 'wizpay' => [
@@ -79,6 +107,7 @@ class ConfigProvider implements ConfigProviderInterface // phpcs:ignore
                     //'getSubtotal1' => $getSubtotal1,
                     'getStoreCurrency' => $getStoreCurrency,
                     'wizpayTitle' => $wizpayTitle,
+                    'default_country' => $default_country
                 ]
             ]
         ];
