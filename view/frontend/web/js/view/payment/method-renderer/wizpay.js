@@ -31,13 +31,15 @@ define(
         ) {
         'use strict';
 
-        if(window.checkoutConfig.payment.wizpay.default_country != 'AU'){
+
+        if(window.checkoutConfig.payment.wizpay.default_country != 'AU' ){
             return Component.extend({
                 defaults: {
                     template: 'Wizpay_Wizpay/payment/outzoneform',
                 },
             });
         }
+
 
 
         return Component.extend({
@@ -56,13 +58,32 @@ define(
                     event.preventDefault();
                 }
                 
-                //if (additionalValidators.validate() && this.isPlaceOrderActionAllowed() === true) {
-                if ( this.isPlaceOrderActionAllowed() === true) {
-                    this.isPlaceOrderActionAllowed(false);
-    
-                    const captureUrlPath = 'wizpay/index?status=SUCCESS';
-                    window.location.replace(url.build(captureUrlPath));
+
+                var shippingAddress = quote.shippingAddress();
+                var billingAddress = quote.billingAddress();
+
+                var isInAU = true;
+                if(shippingAddress && shippingAddress.countryId != 'AU'){
+                    isInAU = false;
                 }
+
+                if(billingAddress && billingAddress.countryId != 'AU'){
+                    isInAU = false;
+                }
+
+                if(isInAU){
+                    //if (additionalValidators.validate() && this.isPlaceOrderActionAllowed() === true) {
+                    if ( this.isPlaceOrderActionAllowed() === true) {
+                        this.isPlaceOrderActionAllowed(false);
+        
+                        const captureUrlPath = 'wizpay/index?status=SUCCESS';
+                        window.location.replace(url.build(captureUrlPath));
+                    }
+                }else{
+                    alert('Wizpay is only available in Australia');
+                }
+
+                
             },
 
 
