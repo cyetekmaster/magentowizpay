@@ -14,6 +14,7 @@ class ExecuteCronJob
 
     protected $resourceConfig;
     protected $scopeConfig;
+    protected $helper;
 
     /**
      * @param \Magento\Config\Model\ResourceModel\Config $resourceConfig
