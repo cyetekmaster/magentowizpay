@@ -31,12 +31,13 @@ class ExecuteCronJob
     {
 
         $get_api_key = $this->helper->getConfig('payment/wizpay/api_key');
+	$get_api_env = $this->helper->getConfig('payment/wizpay/environment');
         $oldwmin = $this->helper->getConfig('payment/wizpay/min_max_wizpay/wz_min_amount');
         $oldwmax = $this->helper->getConfig('payment/wizpay/min_max_wizpay/wz_max_amount');
 
         if (!empty($oldwmin) && !empty($oldwmax)) {
 
-            $wzresponse = $this->helper->call_limit_api($get_api_key);
+            $wzresponse = $this->helper->callLimitapi($get_api_key, $get_api_env);
 
             if (!is_array($wzresponse)) {
 
@@ -109,12 +110,12 @@ class ExecuteCronJob
 		            Thank you!";
 
                     $to = [$recipientEmail, $recipientEmail];
-                    $email = new \Zend_Mail();
-                    $email->setSubject("Wizpay Transaction Limits Change Notification On Your Magento Store");
-                    $email->setBodyText($message);
-                    $email->setFrom($from, $nameFrom);
-                    $email->addTo($recipientEmail, $nameTo);
-                    $email->send();
+//                     $email = new \Zend_Mail();
+//                     $email->setSubject("Wizpay Transaction Limits Change Notification On Your Magento Store");
+//                     $email->setBodyText($message);
+//                     $email->setFrom($from, $nameFrom);
+//                     $email->addTo($recipientEmail, $nameTo);
+//                     $email->send();
 
                     $this->helper->initiateWizpayLogger(
                         'Notification Email sent successfully to Magento Store Admin: '
