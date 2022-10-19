@@ -795,6 +795,9 @@ class Data extends AbstractHelper
         }
 
 
+        $tValue = '';// '<span id="w-price">type=' . $type . ',price=' . $price . ', min-price=' . $min_price . ', max-price=' . $max_price . ', line=</span>';
+
+
         if(intval($wizpay_is_enable, 0) == 1 
            && (
                 (floatval($wizpay_merchant_min_amount) <= $price && $price <=  floatval($wizpay_merchant_max_amount))
@@ -809,17 +812,21 @@ class Data extends AbstractHelper
 
 
             if($type == 'List' && intval( $show_on_product_cat_page, 0) == 1){
-                return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_list .'">
+                return $tValue . '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_list .'">
                                     <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /></div>';
             }
             else if($type == 'Detail' && intval( $show_on_product_page, 0) == 1){
                 if($min_price > 0 && $max_price < 99999){
+                    $sub_amount1 = '$' . number_format($min_price / 4, 2, '.', ',');
+                    $sub_amount2 = '$' . number_format($max_price / 4, 2, '.', ',');
                     // display icon only
-                    return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_list .'">
-                                    <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /></div>';
+                    return $tValue .  '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
+                        <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
+                        <span style="'. $this->wizpay_info_content_style .'">&nbsp;or 4 payments of from '. $sub_amount1 . ' to ' . $sub_amount2 .
+                        ' with Wizpay <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
                 }else{
                     // display full info
-                    return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
+                    return $tValue .  '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
                         <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
                         <span style="'. $this->wizpay_info_content_style .'">&nbsp;or 4 payments of '. $sub_amount .
                         ' with Wizpay <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
@@ -827,7 +834,7 @@ class Data extends AbstractHelper
                 
             }
             else if($type == 'Cart' && intval( $show_on_cat_page, 0) == 1){
-                return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
+                return  $tValue .  '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
                         <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
                         <span style="'. $this->wizpay_info_content_style .'">&nbsp;or 4 payments of '. $sub_amount .' with Wizpay. 
                         <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
@@ -838,11 +845,11 @@ class Data extends AbstractHelper
             if($type == 'Detail' && intval( $show_on_product_page, 0) == 1){
                 if($min_price > 0 && $max_price < 99999){
                     // display icon only
-                    return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_list .'">
+                    return $tValue .  '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_list .'">
                                     <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /></div>';
                 }else{
                     // display full info
-                    return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
+                    return $tValue .  '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
                         <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
                         <span style="'. $this->wizpay_info_content_style .'">&nbsp;is available on purchases between '
                         . '$' . number_format(floatval($wizpay_merchant_min_amount), 2, '.', ',') .' and ' 
@@ -852,7 +859,7 @@ class Data extends AbstractHelper
                 
             }
             else if($type == 'Cart' && intval( $show_on_cat_page, 0) == 1){
-                return '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
+                return  $tValue .  '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
                         <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
                         <span style="'. $this->wizpay_info_content_style .'">&nbsp;is available on purchases between '
                         . '$' . number_format(floatval($wizpay_merchant_min_amount), 2, '.', ',') .' and ' 
