@@ -838,7 +838,7 @@ class Data extends AbstractHelper
             else if($type == 'Cart' && intval( $show_on_cat_page, 0) == 1){
                 return  $tValue .  '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
                         <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
-                        <span style="'. $this->wizpay_info_content_style .'">&nbsp;or 4 payments of '. $sub_amount .' with Wizpay. 
+                        <span style="'. $this->wizpay_info_content_style .'">&nbsp;or 4 payments of <span id="wizpay-sub-amount-price">'. $sub_amount .'</span> with Wizpay. 
                         <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
             }            
         }
