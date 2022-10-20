@@ -49,6 +49,9 @@
 
 
 
+        // Options for the observer (which mutations to observe)
+        var config = { aattributes: true, childList: true, subtree: true, characterData:true};
+
         // Function to convert
         var currencyToNumber = function(currency){
                 var k, temp;
@@ -128,9 +131,7 @@
 
         $(document).ready(function(){
 
-            // Options for the observer (which mutations to observe)
-            var config = { aattributes: true, childList: true, subtree: true, characterData:true};
-
+            
             // watching pricing change
             var currentProductIdNode = document.getElementById('wizpay-sub-amount-price-productid'); 
 
