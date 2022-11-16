@@ -1,8 +1,11 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="default">
-		<job name="wizpay_wizpay_cronjob" instance="Wizpay\Wizpay\Crons\ExecuteCronJob" method="execute">
+		<!-- <job name="wizpay_wizpay_cronjob" instance="Wizpay\Wizpay\Crons\ExecuteCronJob" method="execute">
 			<schedule>*/1 * * * *</schedule>
+        </job> -->
+        <job name="wizpay_wizpay_order_cronjob" instance="Wizpay\Wizpay\Crons\ExecuteOrderCronJob" method="execute">
+			<schedule>*/5 * * * *</schedule>
         </job>
     </group>
 </config>
