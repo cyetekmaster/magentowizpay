@@ -62,7 +62,11 @@ class ExecuteOrderCronJob {
                             
                             if(!empty($wz_token) && !empty($wzTxnId) && !empty($merchantReference)){
                                 $this->logger->info('wizpay - L64 process quote, QuoteId=' . $quote->getId() . ', mre=' . $merchantReference );
-                                $this->wizpayOrderProcesser->process_quote($quote->getId(), $merchantReference);
+                                try{
+                                    $this->wizpayOrderProcesser->process_quote($quote->getId(), $merchantReference);
+                                }catch (Exception $e) {
+                                    $this->logger->info('wizpay - L68 process quote error, QuoteId=' . $quote->getId() . ', mre=' . $merchantReference . ', error = '. $e->getMessage());
+                                }
                             }
                         }
                     }
