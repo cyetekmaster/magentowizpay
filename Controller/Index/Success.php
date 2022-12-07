@@ -14,22 +14,22 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
     const CHECKOUT_STATUS_CANCELLED = "CANCELLED";
     const CHECKOUT_STATUS_SUCCESS = "SUCCESS";
 
-    private $request;
-    private $session;
-    private $redirectFactory;
-    private $messageManager;
-    private $placeOrderProcessor;
-    private $cartManagement;
-    private $logger;
-    private $quoteFactory;
-    private $paymentDataObjectFactory;
-    private $wizpay_data_helper;
-    private $order;
-    private $checkoutHelper;
-    private $invoiceSender;
-    protected $quoteRepository;
-    private $productRepository;
-    private $customerRepository;
+    public $request;
+    public $session;
+    public $redirectFactory;
+    public $messageManager;
+    public $placeOrderProcessor;
+    public $cartManagement;
+    public $logger;
+    public $quoteFactory;
+    public $paymentDataObjectFactory;
+    public $wizpay_data_helper;
+    public $order;
+    public $checkoutHelper;
+    public $invoiceSender;
+    public $quoteRepository;
+    public $productRepository;
+    public $customerRepository;
 
     public function __construct(
         \Magento\Framework\App\Request\Http $request,
@@ -666,7 +666,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         return false;
     }
 
-    private function customAdminEmail($orderId, $out_of_stock_p_details)
+    public function customAdminEmail($orderId, $out_of_stock_p_details)
     {
         // $email = $this->wizpay_data_helper->getConfig("trans_email/ident_general/email");
         // $mailmsg =
@@ -686,7 +686,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         // $transport->sendMessage(); // phpcs:ignore
     }
 
-    private function statusExists($orderStatus)
+    public function statusExists($orderStatus)
     {
         $statuses = $this->getObjectManager()
             ->get("Magento\Sales\Model\Order\Status") // phpcs:ignore
@@ -700,7 +700,7 @@ class Success implements \Magento\Framework\App\Action\HttpGetActionInterface
         return false;
     }
 
-    private function invoiceOrder($order, $transactionId)
+    public function invoiceOrder($order, $transactionId)
     {
         if (!$order->canInvoice()) {
             throw new \Magento\Framework\Exception\LocalizedException(
