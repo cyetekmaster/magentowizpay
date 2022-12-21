@@ -124,9 +124,11 @@ class PlaceOrderProcessor
         
         $successurl = $this->wizpay_data_helper->getCompleteUrl();
         $cancelurl = $this->wizpay_data_helper->getCancelledUrl();
+        $webhookurl = $this->wizpay_data_helper->getWebhookUrl();
 
         $success_url =  $successurl . '?mref=' . $merchantReference . '&quoteId=' . $quoteId;
         $fail_url =  $cancelurl . '?mref=' . $merchantReference . '&quoteId=' . $quoteId;
+        $webhook_url =  $webhookurl . '?mref=' . $merchantReference . '&quoteId=' . $quoteId;
 
         $current_customer = $this->customerSession->getCustomer();
 
@@ -271,7 +273,8 @@ class PlaceOrderProcessor
                 ],
             "merchant"=> [
                 "redirectConfirmUrl"=> $success_url,
-                "redirectCancelUrl"=> $fail_url
+                "redirectCancelUrl"=> $fail_url,
+                "WebhookConfirmUrl" => $webhook_url
             ],
 
             "merchantReference"=> $merchantReference,
