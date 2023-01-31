@@ -225,7 +225,7 @@ class PlaceOrderProcessor
 
 
         // total ground - shipping - cart subtotal - tax - discount 
-        $other_special_item_total = floatval($quote->getGrandTotal()) - floatval($shipping_address->getShippingAmount()) - $item_sub_total - floatval($quote->getTaxAmount());
+        $other_special_item_total = floatval($quote->getGrandTotal()) - floatval($shipping_address->getShippingAmount()) - $item_sub_total - floatval($shipping_address->getBaseTaxAmount());
 
         $data = [
             "amount"=> [
@@ -294,7 +294,7 @@ class PlaceOrderProcessor
             "merchantQuoteId" =>  $quoteId,
 
             "taxAmount"=> [
-                "amount"=> number_format(floatval($quote->getTaxAmount()), 2),
+                "amount"=> number_format(floatval($shipping_address->getBaseTaxAmount()), 2),
                 "currency"=> $getStoreCurrency
             ],
             "shippingAmount"=> [
