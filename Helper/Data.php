@@ -104,7 +104,7 @@ class Data extends AbstractHelper
 
 
     public function getPluginVersion(){
-        return '1.1.9';
+        return '1.2.0';
     }
 
     public function initiateWizpayLogger($log)
