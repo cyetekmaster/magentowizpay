@@ -11,19 +11,23 @@ class Success extends Index
 {
 
     public $logger;
+    public $callback_source;
 
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger
     ) {
         $this->logger = $logger;
+        $this->callback_source = "Success CALL BACK";
     }
     
     public function execute() // phpcs:ignore
     {
 
 
-        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK START<<<<<<<<<<<<<<<<<<<<-------------------");
+        $this->logger->info(
+            "-------------------->>>>>>>>>>>>>>>>>>" . $this->callback_source . " START<<<<<<<<<<<<<<<<<<<<-------------------"
+        );
 
         if (!empty($this->getRequest()->getParam('orderid')) &&  !empty($this->getRequest()->getParam('mref'))) {
            
@@ -175,7 +179,7 @@ class Success extends Index
                                 )
                             );
 
-                            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 334<<<<<<<<<<<<<<<<<<<<-------------------");
+                            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>" . $this->callback_source . " END 334<<<<<<<<<<<<<<<<<<<<-------------------");
 
                             if (!empty($failed_url)) {
 
@@ -231,7 +235,7 @@ class Success extends Index
                             
                             $order->save();
 
-                            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 390<<<<<<<<<<<<<<<<<<<<-------------------");
+                            $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>" . $this->callback_source . " END 390<<<<<<<<<<<<<<<<<<<<-------------------");
 
                             if (!empty($success_url)) {
                                 $this->_redirect($success_url);
@@ -261,7 +265,7 @@ class Success extends Index
                         $order->addStatusToHistory('pending', 'Put your comment here', false);
                         $order->save();*/
 
-                        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 420<<<<<<<<<<<<<<<<<<<<-------------------");
+                        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>" . $this->callback_source . " END 420<<<<<<<<<<<<<<<<<<<<-------------------");
 
                         if (!empty($success_url)) {
                             $this->_redirect($success_url);

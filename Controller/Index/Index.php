@@ -227,9 +227,11 @@ class Index extends Action
         $merchantReference =  'MER' . $uniqid . '-' . $orderId;
         $successurl = $this->helper->getCompleteUrl();
         $cancelurl = $this->helper->getCancelledUrl();
+        $webhookurl = $this->helper->getWebhookUrl();
 
         $success_url =  $successurl . '?mref=' . $merchantReference . '&orderid=' . $orderId;
         $fail_url =  $cancelurl . '?mref=' . $merchantReference . '&orderid=' . $orderId;
+        $webhook_url = $webhookurl . '?mref=' . $merchantReference . '&quoteId=' . $quoteId;
         //$getStoreCurrency = $this->helper->getStoreCurrency();
 
         $current_customer = $this->customerSession->getCustomer();
@@ -381,7 +383,8 @@ class Index extends Action
                 ],
             "merchant"=> [
                 "redirectConfirmUrl"=> $success_url,
-                "redirectCancelUrl"=> $fail_url
+                "redirectCancelUrl"=> $fail_url,
+                "WebhookConfirmUrl" => $webhook_url
             ],
 
             "merchantReference"=> $merchantReference,
