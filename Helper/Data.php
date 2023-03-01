@@ -210,9 +210,9 @@ class Data extends AbstractHelper
     
     //  return 'https://uatapi.wizardpay.com.au/v1/api/';
     // }
-    private function apiUrl($environment = '')
+    private function apiUrl($environment = null)
     {        
-        if($environment == '' || !is_int($environment)){
+        if(!isset($environment)){
             // get from setting
             $environment = $this->getConfig('payment/wizpay/environment');
         }
