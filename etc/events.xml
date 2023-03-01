@@ -23,4 +23,7 @@
                   instance="Wizpay\Wizpay\Observer\AuthCaptureBeforeShipment"/>
     </event> -->
 
+    <event name="payment_method_is_active">
+        <observer name="wizpay_gateway_payment_available" instance="Wizpay\Wizpay\Observer\Payment\PaymentMethodAvailable" />
+    </event>
 </config>
