@@ -335,7 +335,7 @@ class Index extends Action
         }
 
         // total ground - shipping - cart subtotal - tax - discount 
-        $other_special_item_total = floatval($order->getGrandTotal()) - floatval($shipping_address->getShippingAmount()) - $item_sub_total - floatval($order->getTaxAmount());
+        $other_special_item_total = floatval($order->getGrandTotal()) - floatval($shipping_address->getShippingAmount()) - $item_sub_total - floatval($shipping_address->getBaseTaxAmount());
 
         $data = [
             "amount"=> [
@@ -403,7 +403,7 @@ class Index extends Action
             'merchantOrderId'=> $orderId,
 
             "taxAmount"=> [
-                "amount"=> number_format($order->getTaxAmount(), 2),
+                "amount"=> number_format(floatval($shipping_address->getBaseTaxAmount()), 2),
                 "currency"=> $getStoreCurrency
             ],
             "shippingAmount"=> [
