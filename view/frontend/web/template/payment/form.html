@@ -2,85 +2,82 @@
 <div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
     <style>
         .wizp-custom-payfields .wizp-row {
-            display: flex;
-            flex-wrap: wrap;
-            text-align: center;
+        display: flex;
+        flex-wrap: wrap;
+        text-align: center;
         }
-
         .wizp-custom-payfields .wizp-row .wizp-col-3 {
-            flex: 0 0 auto;
-            width: 25%;
+        flex: 0 0 auto;
+        width: 25%;
         }
-
         @media screen and (max-width: 576px) {
-            .wizp-custom-payfields .wizp-row .wizp-col-sm-6 {
-                flex: 0 0 auto;
-                width: 50%;
-            }
+        .wizp-custom-payfields .wizp-row .wizp-col-sm-6 {
+        flex: 0 0 auto;
+        width: 50%;
         }
-    </style>
+        }
+     </style>
     <div class="payment-method-title field choice">
         <input type="radio" name="payment[method]" class="radio"
-            data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()" />
-        <img data-bind="attr: {src: getLogoUrl()}" class="payment-icon" />
-        <label data-bind="attr: {'for': getCode()}" class="label" for="Wizpay">
+          data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()" />
+       <label data-bind="attr: {'for': getCode()}" class="label" for="Wizpay">
             <img data-bind="attr: {src: getLogoUrl()}" class="payment-icon" alt="Wizpay" />
             &nbsp;&nbsp;<span style="line-height: 25px;" data-bind="text: getTitle()"></span>
-        </label>
+       </label>
     </div>
     <div class="payment-method-content">
         <h5 style="font-size: 16px;">4 x interest free fortnightly instalments totalling $<span
-                data-bind="text: totalamount()"></span></h5>
-        <div class="wizp-custom-payfields">
+            data-bind="text: totalamount()"></span></h5>
+         <div class="wizp-custom-payfields">
             <div class="wizp-row">
-                <div class="wizp-col-3 wizp-col-sm-6">
-                    <span style="font-size: 18px;">$<span data-bind="text: installment()"></span></span>
-                    <div class="installment1">
-                        <svg width="25" height="25" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="3" cy="3" r="3" fill="#6F00FF" />
-                            <circle cx="13" cy="3" r="3" fill="#EDEDF4" />
-                            <circle cx="3" cy="13" r="3" fill="#EDEDF4" />
-                            <circle cx="13" cy="13" r="3" fill="#EDEDF4" />
-                        </svg>
-                    </div>
-                    <p>First Payment</p>
-                </div>
-                <div class="wizp-col-3 wizp-col-sm-6">
-                    <span style="font-size: 18px;">$<span data-bind="text: installment()"></span></span>
-                    <div class="installment1">
-                        <svg width="25" height="25" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="3" cy="3" r="3" fill="#6F00FF" />
-                            <circle cx="13" cy="3" r="3" fill="#6F00FF" />
-                            <circle cx="3" cy="13" r="3" fill="#EDEDF4" />
-                            <circle cx="13" cy="13" r="3" fill="#EDEDF4" />
-                        </svg>
-                    </div>
-                    <p>2 weeks later</p>
-                </div>
-                <div class="wizp-col-3 wizp-col-sm-6">
-                    <span style="font-size: 18px;">$<span data-bind="text: installment()"></span></span>
-                    <div class="installment1">
-                        <svg width="25" height="25" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="3" cy="3" r="3" fill="#6F00FF" />
-                            <circle cx="13" cy="3" r="3" fill="#6F00FF" />
-                            <circle cx="3" cy="13" r="3" fill="#6F00FF" />
-                            <circle cx="13" cy="13" r="3" fill="#EDEDF4" />
-                        </svg>
-                    </div>
-                    <p>4 weeks later</p>
-                </div>
-                <div class="wizp-col-3 wizp-col-sm-6">
-                    <span style="font-size: 18px;">$<span data-bind="text: installment()"></span></span>
-                    <div class="installment1">
-                        <svg width="25" height="25" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="3" cy="3" r="3" fill="#6F00FF" />
-                            <circle cx="13" cy="3" r="3" fill="#6F00FF" />
-                            <circle cx="3" cy="13" r="3" fill="#6F00FF" />
-                            <circle cx="13" cy="13" r="3" fill="#6F00FF" />
-                        </svg>
-                    </div>
-                    <p>6 weeks later</p>
-                </div>
+               <div class="wizp-col-3 wizp-col-sm-6">
+                  <span style="font-size: 18px;">$<span data-bind="text: installment()"></span></span>
+                  <div class="installment1">
+                     <svg width="25" height="25" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="3" cy="3" r="3" fill="#6F00FF" />
+                        <circle cx="13" cy="3" r="3" fill="#EDEDF4" />
+                        <circle cx="3" cy="13" r="3" fill="#EDEDF4" />
+                        <circle cx="13" cy="13" r="3" fill="#EDEDF4" />
+                     </svg>
+                  </div>
+                  <p>First Payment</p>
+               </div>
+               <div class="wizp-col-3 wizp-col-sm-6">
+                  <span style="font-size: 18px;">$<span data-bind="text: installment()"></span></span>
+                  <div class="installment1">
+                     <svg width="25" height="25" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="3" cy="3" r="3" fill="#6F00FF" />
+                        <circle cx="13" cy="3" r="3" fill="#6F00FF" />
+                        <circle cx="3" cy="13" r="3" fill="#EDEDF4" />
+                        <circle cx="13" cy="13" r="3" fill="#EDEDF4" />
+                     </svg>
+                  </div>
+                  <p>2 weeks later</p>
+               </div>
+               <div class="wizp-col-3 wizp-col-sm-6">
+                  <span style="font-size: 18px;">$<span data-bind="text: installment()"></span></span>
+                  <div class="installment1">
+                     <svg width="25" height="25" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="3" cy="3" r="3" fill="#6F00FF" />
+                        <circle cx="13" cy="3" r="3" fill="#6F00FF" />
+                        <circle cx="3" cy="13" r="3" fill="#6F00FF" />
+                        <circle cx="13" cy="13" r="3" fill="#EDEDF4" />
+                     </svg>
+                  </div>
+                  <p>4 weeks later</p>
+               </div>
+               <div class="wizp-col-3 wizp-col-sm-6">
+                  <span style="font-size: 18px;">$<span data-bind="text: installment()"></span></span>
+                  <div class="installment1">
+                     <svg width="25" height="25" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="3" cy="3" r="3" fill="#6F00FF" />
+                        <circle cx="13" cy="3" r="3" fill="#6F00FF" />
+                        <circle cx="3" cy="13" r="3" fill="#6F00FF" />
+                        <circle cx="13" cy="13" r="3" fill="#6F00FF" />
+                     </svg>
+                  </div>
+                  <p>6 weeks later</p>
+               </div>
             </div>
             </ul>
             <!-- ko foreach: getRegion('messages') -->
@@ -88,35 +85,33 @@
             <!-- /ko -->
             <!--/ko-->
             <div class="payment-method-billing-address">
-                <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
-                <!-- ko template: getTemplate() -->
-                <!-- /ko -->
-                <!--/ko-->
+               <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
+               <!-- ko template: getTemplate() -->
+               <!-- /ko -->
+               <!--/ko-->
             </div>
-
             <!-- Render the native credit card form. 
-        <form class="form" data-bind="attr: {'id': getCode() + '-form'}">
-            ko template: 'Magento_Payment/payment/cc-form'  /ko 
-        </form>-->
-
+               <form class="form" data-bind="attr: {'id': getCode() + '-form'}">
+                   ko template: 'Magento_Payment/payment/cc-form'  /ko 
+               </form>-->
             <div class="checkout-agreements-block">
-                <!-- ko foreach: $parent.getRegion('before-place-order') -->
-                <!-- ko template: getTemplate() -->
-                <!-- /ko -->
-                <!--/ko-->
+               <!-- ko foreach: $parent.getRegion('before-place-order') -->
+               <!-- ko template: getTemplate() -->
+               <!-- /ko -->
+               <!--/ko-->
             </div>
-
             <div class="actions-toolbar">
-                <div class="primary">
-                    <button data-role="review-save" type="submit" data-bind="
-                        attr: {title: $t('Place Order')},
-                        enable: (getCode() == isChecked()),
-                        click: placeOrder,
-                        css: {disabled: !isPlaceOrderActionAllowed()}
-                        " class="action primary checkout" disabled>
-                        <span data-bind="i18n: 'Place Order'"></span>
-                    </button>
-                </div>
+               <div class="primary">
+                  <button data-role="review-save" type="submit" data-bind="
+                     attr: {title: $t('Place Order')},
+                     enable: (getCode() == isChecked()),
+                     click: continueToWizpay,
+                     css: {disabled: !isPlaceOrderActionAllowed()}
+                     " class="action primary checkout" disabled>
+                  <span data-bind="i18n: 'Place Order with Wizpay'"></span>
+                  </button>
+               </div>
             </div>
-        </div>
-    </div>
+         </div>
+      </div>
+   </div>

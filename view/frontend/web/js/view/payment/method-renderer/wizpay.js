@@ -19,6 +19,14 @@ define(
         quote) {
         'use strict';
 
+        if(window.checkoutConfig.payment.wizpay.default_country != 'AU'){
+            return Component.extend({
+                defaults: {
+                    template: 'Wizpay_Wizpay/payment/outzoneform',
+                },
+            });
+        }
+
         return Component.extend({
             defaults: {
                 template: 'Wizpay_Wizpay/payment/form',
@@ -41,7 +49,7 @@ define(
             getTitle : function(){
                 return window.checkoutConfig.payment.wizpay.wizpayTitle;
             },
-            
+
             totalamount: function () {
                 var price = quote.getTotals()().base_grand_total;
                 return price.toFixed(2);
