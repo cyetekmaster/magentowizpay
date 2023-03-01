@@ -231,7 +231,7 @@ class Index extends Action
 
         $success_url =  $successurl . '?mref=' . $merchantReference . '&orderid=' . $orderId;
         $fail_url =  $cancelurl . '?mref=' . $merchantReference . '&orderid=' . $orderId;
-        $webhook_url = $webhookurl . '?mref=' . $merchantReference . '&quoteId=' . $quoteId;
+        $webhook_url = $webhookurl . '?mref=' . $merchantReference . '&orderid=' . $orderId;
         //$getStoreCurrency = $this->helper->getStoreCurrency();
 
         $current_customer = $this->customerSession->getCustomer();
