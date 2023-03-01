@@ -46,93 +46,159 @@
             // load modal
             $('#wizpay-modal-content').modal('openModal');
         });
-        // Options for the observer (which mutations to observe)
-        var config = { attributes: true, childList: true };
+        
+        
+        $(document).ready(function(){
 
-        // watching pricing change
-        var currentProductIdNode = document.getElementById('wizpay-sub-amount-price-productid'); 
+            // Options for the observer (which mutations to observe)
+            var config = { aattributes: true, childList: true, subtree: true, characterData:true};
 
-        if(currentProductIdNode){
-            var productId = currentProductIdNode.value;
-            
-            if(Number(productId) > 0){
-                var targetNode = document.getElementById('product-price-' + productId);
-                
-                if(targetNode){                    
-                    // Callback function to execute when mutations are observed
-                    var callback = function(mutationsList) {
-                        for(var mutation of mutationsList) {
-                            if (mutation.type == 'childList') {
-                                
+            // watching pricing change
+            var currentProductIdNode = document.getElementById('wizpay-sub-amount-price-productid'); 
+
+            if(currentProductIdNode){
+                var productId = currentProductIdNode.value;
+
+                if(Number(productId) > 0){
+                    var targetNode = document.getElementById('product-price-' + productId);
+
+                    if(targetNode){                    
+                        // Callback function to execute when mutations are observed
+                        var callback = function(mutationsList) {
+                            for(var mutation of mutationsList) {
                                 // get new value
-                                    var newNodes = targetNode.getElementsByClassName('price');
-                                    if(newNodes && newNodes.length > 0){
-                                        var newValue = newNodes[0];
-                                        
-                                        if(newValue){
-                                            var total = currencyToNumber(newValue.innerHTML);
-                                            
+                                var newNodes = targetNode.getElementsByClassName('price');
+                                if(newNodes && newNodes.length > 0){
+                                    var newValue = newNodes[0];
+
+                                    if(newValue){
+                                        var total = currencyToNumber(newValue.innerHTML);
+
+                                        if(total > 0){
+                                            // re-calc wizpay value
+                                            var priceElement = document.getElementById('wizpay-sub-amount-price');
+                                            if(priceElement){
+                                                priceElement.innerHTML = '$' + (total / 4).toFixed(2);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        };
+
+                        // Create an observer instance linked to the callback function
+                        var observer = new MutationObserver(callback);
+
+                        // Start observing the target node for configured mutations
+                        observer.observe(targetNode, config);
+                    } 
+                }
+            }
+
+
+
+            // watch cart amount change
+            var cartTotalNode = document.getElementById('cart-totals');
+
+            if(cartTotalNode){
+                var groundTotalNodes = cartTotalNode.getElementsByClassName('grand totals');
+
+                if(groundTotalNodes && groundTotalNodes.length > 0){
+                    cartGroupTotalWatcher(groundTotalNodes) ;
+                }
+                else{
+                    var callbackGroundTotalNode = function(mutationsList){
+                        var groundTotalNodes = cartTotalNode.getElementsByClassName('grand totals');
+
+                        if(groundTotalNodes && groundTotalNodes.length > 0){
+                            cartGroupTotalWatcher(groundTotalNodes) ;
+                        }
+                    }
+
+                    // Create an observer instance linked to the callback function
+                    var observerGroundTotalNode = new MutationObserver(callbackGroundTotalNode);
+                    // Start observing the target node for configured mutations
+                    observerGroundTotalNode.observe(cartTotalNode, config);
+                }
+
+            }
+
+
+            var cartGroupTotalWatcher = function(groundTotalNodes){
+                var groundTotalNode = groundTotalNodes[0];
+
+                    if(groundTotalNode){
+                        var priceNodes = groundTotalNode.getElementsByClassName('price');
+
+                        if(priceNodes && priceNodes.length > 0){
+                            var priceNode = priceNodes[0];
+
+                            // Callback function to execute when mutations are observed
+                            var callbackCart = function(mutationsList) {
+                                for(var mutation of mutationsList) {
+                                    var newPriceNodes = groundTotalNode.getElementsByClassName('price');
+
+                                    if(newPriceNodes && newPriceNodes.length > 0){
+                                        var newPriceNode = newPriceNodes[0];
+
+                                        if(newPriceNode){
+                                            var total = currencyToNumber(newPriceNode.innerHTML);  
+
                                             if(total > 0){
                                                 // re-calc wizpay value
                                                 var priceElement = document.getElementById('wizpay-sub-amount-price');
+
                                                 if(priceElement){
                                                     priceElement.innerHTML = '$' + (total / 4).toFixed(2);
                                                 }
                                             }
                                         }
                                     }
+                                }
+                            };
 
+                            // Create an observer instance linked to the callback function
+                            var observerCart = new MutationObserver(callbackCart);
 
-                            }
-                            else if (mutation.type == 'attributes') {
-                                
-                            }
+                            // Start observing the target node for configured mutations
+                            observerCart.observe(priceNode, config);   
                         }
-                    };
-
-                    // Create an observer instance linked to the callback function
-                    var observer = new MutationObserver(callback);
-
-                    // Start observing the target node for configured mutations
-                    observer.observe(targetNode, config);
-                } 
+                    }    
             }
-        }
 
+            // Function to convert
+            var currencyToNumber = function convert(currency){
+                var k, temp;
+                try{
+                    // Loop to make substring
+                    for(var i = 0; i < currency.length; i++){
 
-        // Function to convert
-        var currencyToNumber = function convert(currency){
-            var k, temp;
-            try{
-                // Loop to make substring
-                for(var i = 0; i < currency.length; i++){
+                        // Getting Unicode value
+                        k = currency.charCodeAt(i);
 
-                    // Getting Unicode value
-                    k = currency.charCodeAt(i);
+                        // Checking whether the character
+                        // is of numeric type or not
+                        if(k > 47 && k < 58){
 
-                    // Checking whether the character
-                    // is of numeric type or not
-                    if(k > 47 && k < 58){
-
-                        // Making substring
-                        temp = currency.substring(i);
-                        break;
+                            // Making substring
+                            temp = currency.substring(i);
+                            break;
+                        }
                     }
+
+                    // If currency is in format like
+                    // 458, 656.75 then we used replace
+                    // method to replace every ', ' with ''
+                    temp = temp.replace(/, /, '');
+
+                    // Converting string to float
+                    // or double and return
+                    return parseFloat(temp);   
+                } catch(error){
+                    return 0;
                 }
 
-                // If currency is in format like
-                // 458, 656.75 then we used replace
-                // method to replace every ', ' with ''
-                temp = temp.replace(/, /, '');
-
-                // Converting string to float
-                // or double and return
-                return parseFloat(temp);   
-            } catch(error){
-                return 0;
             }
-
-        }
-
+        });
     });
 </script>
