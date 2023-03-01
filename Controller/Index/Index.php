@@ -309,6 +309,9 @@ class Index extends Action
         //Loop through each item and fetch data
         $items = $order->getAllVisibleItems();
 
+        $item_sub_total = 0;
+
+
         foreach ($items as $item) {
 
             if ($item->getData()) {
@@ -326,12 +329,21 @@ class Index extends Action
                         'currency' => $getStoreCurrency
                     ]
                 ];
+
+                $item_sub_total = $item_sub_total + floatval($item->getPrice());
             }
         }
+
+        // total ground - shipping - cart subtotal - tax - discount 
+        $other_special_item_total = floatval($order->getGrandTotal()) - floatval($shipping_address->getShippingAmount()) - $item_sub_total - floatval($order->getTaxAmount());
 
         $data = [
             "amount"=> [
                 "amount"=> number_format($order->getGrandTotal(), 2),
+                "currency"=> $getStoreCurrency
+            ],
+            "OtherCharges"=> [
+                "amount"=> number_format($other_special_item_total, 2),
                 "currency"=> $getStoreCurrency
             ],
             "consumer"=> [
