@@ -31,7 +31,8 @@ class Data extends AbstractHelper
 
 
     private function GetApiUrl($environment){
-        if($environment == 1 || $environment == ''){
+        $env = intval($environment, 0);
+        if($env == 1){
             return $this->test_url . $this->version . $this->intermediate;
         }else{
             return $this->base_url . $this->version . $this->intermediate;   
@@ -211,7 +212,7 @@ class Data extends AbstractHelper
     // }
     private function apiUrl($environment = '')
     {        
-        if(!is_int($environment) || $environment == ''){
+        if($environment == '' || !is_int($environment)){
             // get from setting
             $environment = $this->getConfig('payment/wizpay/environment');
         }
