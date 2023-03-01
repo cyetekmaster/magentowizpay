@@ -256,10 +256,24 @@ class Index extends Action
             $last_name = $current_customer->getLastname();
         }
 
-        $email = $order->getCustomerEmail();
-        if(empty($email) || $email == null){
+        $email = '';
+
+        if($order->getCustomerEmail() != null && !empty($order->getCustomerEmail())){
+            $email = $order->getCustomerEmail();
+            $order->setCustomerEmail($email);
+        }
+        else if($billingaddress->getEmail() != null && !empty($billingaddress->getEmail())){
             $email = $billingaddress->getEmail();
             $order->setCustomerEmail($email);
+        }
+        else if(isset($shipping_address) && $shipping_address->getEmail() != null && !empty($shipping_address->getEmail())){
+            $email = $shipping_address->getEmail();
+            $order->setCustomerEmail($email);
+        }
+
+        if($email == null || empty($email) || $email == ''){
+            $this->logger->critical('Order placement is failed with error: no email' );
+            return null;
         }
 
         $getStoreCurrency = 'AUD';
@@ -267,11 +281,12 @@ class Index extends Action
             return;
         }*/
         if (!isset($billingaddress)) {
-
+            $this->logger->critical('Order placement is failed with error: no billing address' );
             return;
         }
 
         if (!isset($getStreet[0])) {
+            $this->logger->critical('Order placement is failed with error: no billing address - street' );
             return;
 
         } else {
