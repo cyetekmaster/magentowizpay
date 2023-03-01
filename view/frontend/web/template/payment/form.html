@@ -26,8 +26,8 @@
         <input type="radio" name="payment[method]" class="radio"
             data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()" />
         <img data-bind="attr: {src: getLogoUrl()}" class="payment-icon" />
-        <label data-bind="attr: {'for': getCode()}" class="label">
-            <span data-bind="text: getTitle()"></span>
+        <label data-bind="attr: {'for': getCode()}" class="label" for="Wizpay">
+            <img data-bind="attr: {src: getLogoUrl()}" class="payment-icon" alt="Wizpay" />
         </label>
     </div>
     <div class="payment-method-content">
