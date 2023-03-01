@@ -84,347 +84,42 @@ class Success extends Index
                 $apiOrderId = $wzresponse['transactionId'];
                 ;
          
-                if ('APPROVED' == $orderStatus && 'AUTH_APPROVED' == $paymentStatus) {
-
-                    if ($capture_settings == '1') {
-                        //Loop through each item and fetch data
-                        // get order item out of stock data
-                        $all_items = [];
-                        $product_out_stocks = [];
-                        $price_total = [];
-                        $backordered = 0;
-                        $ordered = 0;
-                        $itemsarray = [];
-                        
-                        foreach ($order->getAllItems() as $item) {
-                            //Get the product ID
-                            $alldata = $item->getData();
-                            $product_id = $item->getId();
-                            $total     = floatval($alldata['row_total_incl_tax']); // Total without tax (discounted)
-                            $product_title = substr($item->getName(), 0, 4);
-                            $product_out_stock = $alldata['qty_backordered'];
-                            $ordered_status = $item->getStatus();
-                            $qty_ordered = $alldata['qty_ordered'];
-                            
-                            if ('Backordered' == $ordered_status) {
-
-                                $backordered++;
-                            }
-                            if ('Ordered' == $ordered_status) {
-
-                                $ordered++;
-                            }
-
-                            if (!empty($product_out_stock)) {
-
-                                $qty_invoiced = $qty_ordered - $product_out_stock;
-                                // $item->setData('qty_invoiced', $qty_invoiced);
-                                $product_out_stocks[] = $product_out_stock;
-                                $price_total[] = $total;
-
-                                $all_items[] = 'Item #' . $product_id . '- ' . $product_title . '...';
-
-                                if ($qty_invoiced == 0) {
-                                    continue;
-                                } else {
-
-                                    $qty_ordered = $qty_invoiced;
-                                }
-                            }
-
-                            $itemsarray[$product_id] = $qty_ordered;
-
-                        }
-
-                        $price_total_sum = array_sum($price_total);
-                        $out_of_stock_p_details = implode(', ', $all_items);
-                                   
-
-                        $this->logger->info("product_out_stocks->" . json_encode($product_out_stocks));
-                        $this->logger->info("get_subtotal->" . floatval($order->getGrandTotal()));
-                        $this->logger->info("capture_amount->" . (floatval($order->getGrandTotal()) - $price_total_sum));
-                        $this->logger->info("backordered->" . $backordered);
-                        $this->logger->info("ordered->" . $ordered);
-
-
-                        if (!empty($product_out_stocks)) {
-
-                            $get_subtotal = floatval($order->getGrandTotal());
-                            $capture_amount = $get_subtotal - $price_total_sum;
-                            
-                            if ($backordered > 0 && $ordered == 0) {
-
-                                //$apicaptureOrderId = $wzresponse['transactionId'];
-
-                                $messageconc = "from the order are not in stock, so payment was not captured. ";
-
-                                $messageconc .= "You need to capture the payment manually ";
-                                $messageconc .= "after it is back in stock. ";
-                                $messageconc .= "Wizpay Transaction ID (" .$apiOrderId .")";
-
-                                $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-                                $order = $objectManager->create('\Magento\Sales\Model\Order')->load($orderId); // phpcs:ignore
-                                $mailmsg = $out_of_stock_p_details . ' '. $messageconc;
-                                if (count($product_out_stocks) > 1) {
-
-                                    $order->addStatusToHistory(
-                                        'pending_capture',
-                                        $out_of_stock_p_details . ' '. $messageconc,
-                                        false
-                                    );
-
-                                } else {
-                                    $order->addStatusToHistory(
-                                        'pending_capture',
-                                        $out_of_stock_p_details . ' '. $messageconc,
-                                        false
-                                    );
-                                }
-
-                                $currentStatus = $order->getState();
-                                $status = 'pending_capture';
-                                $order->setState($status)->setStatus($status);
-
-                                $payment = $order->getPayment();
-                                $payment->setTransactionId($apiOrderId);
-                                $payment->setIsTransactionClosed(false);
-                                $payment->addTransaction(
-                                    \Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH,
-                                    null,
-                                    0
-                                );
-
-                                $payment->save();
-                                $order->save();
-                                
-                                $this->customAdminEmail($orderId, $out_of_stock_p_details);
-
-                                $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 202<<<<<<<<<<<<<<<<<<<<-------------------");
-
-                                if (!empty($success_url)) {
-                                    $this->_redirect($success_url);
-                                } else {
-                                    $this->_redirect('checkout/onepage/success', ['_secure'=> false]);
-                                }
-
-                            } else {
-
-                                //$currency = get_woocommerce_currency();
-                                $uniqid = hash('md5', time() . $orderId);
-                                $api_data = [
-                                    'RequestId' => $uniqid,
-                                    'merchantReference' => $merchantReference,
-                                    'amount' => [
-                                        'amount'=> $capture_amount,
-                                        'currency'=> 'AUD'
-                                    ],
-                                ];
-
-                                $wzresponse = $this->helper->orderPartialCaptureApi(
-                                    $wz_api_key,
-                                    $api_data,
-                                    $apiOrderId
-                                );
-   
-                                if (!is_array($wzresponse)) {
-
-                                    $this->getCheckoutHelper()->cancelCurrentOrder(
-                                        "Order #".($order->getId())." was rejected by Wizpay. Transaction #$wzTxnId."
-                                    );
-                                    $this->getCheckoutHelper()->restoreQuote(); //restore cart
-                                    $this->getMessageManager()->addErrorMessage(
-                                        __(
-                                            "There was an error in the partial captured amount"
-                                        )
-                                    );
-
-                                    $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 241<<<<<<<<<<<<<<<<<<<<-------------------");
-
-                                    if (!empty($failed_url)) {
-
-                                        $this->_redirect($failed_url);
-                                    } else {
-                                        $this->_redirect('checkout/cart', ['_secure'=> false]);
-                                    }
-
-                                } else {
-
-                                    $msg = ' from the order are not in stock, so payment was not captured.';
-                                    $msg .= ' You need to capture the payment manually after it is back in stock.';
-                                    if (count($product_out_stocks) > 1) {
-
-                                        $order->addStatusHistoryComment($out_of_stock_p_details . $msg);
-
-                                    } else {
-                                        $order->addStatusHistoryComment($out_of_stock_p_details . $msg);
-                                    }
-                                    // $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-                                    /* $order = $objectManager->create('Magento\Sales\Model\Order')->load($orderId); */ // phpcs:ignore
-                                    if ($order->canInvoice()) {
-                                        // Create invoice for this order
-                                        $invoice = $objectManager->create('Magento\Sales\Model\Service\InvoiceService')->prepareInvoice($order, $itemsarray); // phpcs:ignore
-
-                                        // Make sure there is a qty on the invoice
-                                        if (!$invoice->getTotalQty()) {
-                                            throw new \Magento\Framework\Exception\LocalizedException(
-                                                __('You can\'t create an invoice without products.')
-                                            );
-                                        }
-
-                                        // Register as invoice item
-                                        $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE); // phpcs:ignore
-                                        $invoice->register();
-
-                                        $payment = $order->getPayment();
-
-                                        $getAdditionalInformation = $payment->getAdditionalInformation();
-
-                                        $payment->setTransactionId($apiOrderId);
-                                        $payment->addTransaction(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE); // phpcs:ignore
-                                        $payment->save();
-
-                                        // Save the invoice to the order
-                                        $transaction = $objectManager->create('Magento\Framework\DB\Transaction') // phpcs:ignore
-                                            ->addObject($invoice)
-                                            ->addObject($invoice->getOrder());
-
-                                        $transaction->save();
-
-                                        // Magento\Sales\Model\Order\Email\Sender\InvoiceSender
-                                        $this->invoiceSender->send($invoice);
-
-                                        $order->addStatusHistoryComment(__('Notified customer about invoice #%1.', $invoice->getId()))->setIsCustomerNotified(true)->save(); // phpcs:ignore
-                                    }
-                                    $this->customAdminEmail($orderId, $out_of_stock_p_details);
-                                    
-
-                                    $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 301<<<<<<<<<<<<<<<<<<<<-------------------");
-
-                                    if (!empty($success_url)) {
-                                            $this->_redirect($success_url);
-                                    } else {
-                                        $this->_redirect('checkout/onepage/success', ['_secure'=> false]);
-                                    }
-                                }
-                            } //if (empty($inStockitems ))
-                            
-                        } else {
-                            $capture_amount = floatval($order->getGrandTotal());
-                            $price_total_sum = 0;
-
-                            // order items inStocks Call immediatePaymentCapture()
-                            $api_data = [
-                                'token' => $wz_token,
-                                'merchantReference' => $merchantReference
-                            ];
-
-                            $wzresponse = $this->helper->immediatePaymentCapture($wz_api_key, $api_data);
-
-                            if (!is_array($wzresponse)) {
-
-                                $this->getCheckoutHelper()->cancelCurrentOrder(
-                                "Order #".($order->getId())." was rejected by Wizpay. Transaction ID" . $apiOrderId); // phpcs:ignore
-                                $this->getCheckoutHelper()->restoreQuote(); //restore cart
-                                $this->getMessageManager()->addErrorMessage(
-                                    __(
-                                        "There was an error in the Wizpay payment"
-                                    )
-                                );
-
-                                $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 334<<<<<<<<<<<<<<<<<<<<-------------------");
-
-                                if (!empty($failed_url)) {
-
-                                    $this->_redirect($failed_url);
-                                } else {
-                                    $this->_redirect('checkout', ['_secure'=> false]);
-                                }
-                            } else {
-
-                                if ($order->canInvoice()) {
-                                    // Create invoice for this order
-                                    $invoice = $objectManager->create('Magento\Sales\Model\Service\InvoiceService')->prepareInvoice($order); // phpcs:ignore
-
-                                    // Make sure there is a qty on the invoice
-                                    if (!$invoice->getTotalQty()) {
-                                        throw new \Magento\Framework\Exception\LocalizedException(
-                                            __('You can\'t create an invoice without products.')
-                                        );
-                                    }
-
-                                    // Register as invoice item
-                                    $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE); // phpcs:ignore
-                                    $invoice->register();
-                                    $payment = $order->getPayment();
-                                    $payment->setTransactionId($apiOrderId);
-                                    $payment->addTransaction(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE); // phpcs:ignore
-                                    $payment->save();
-
-                                    // Save the invoice to the order
-                                    $transaction = $objectManager->create('Magento\Framework\DB\Transaction') // phpcs:ignore
-                                        ->addObject($invoice)
-                                        ->addObject($invoice->getOrder());
-
-                                    $transaction->save();
-                                    // Magento\Sales\Model\Order\Email\Sender\InvoiceSender
-                                    $this->invoiceSender->send($invoice);
-
-                                    $order->addStatusHistoryComment(
-                                        __(
-                                            'Notified customer about invoice #%1.',
-                                            $invoice->getId()
-                                        )
-                                    )->setIsCustomerNotified(true)
-                                    ->save();
-                                }
-
-                                $order->addStatusToHistory(
-                                    'processing',
-                                    'Your payment with Wizpay is complete. Wizpay Transaction ID: '
-                                    . $apiOrderId,
-                                    false
-                                );
-                                
-                                $order->save();
-
-                                $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 390<<<<<<<<<<<<<<<<<<<<-------------------");
-
-                                if (!empty($success_url)) {
-                                    $this->_redirect($success_url);
-                                } else {
-                                    $this->_redirect('checkout/onepage/success', ['_secure'=> false]);
-                                }
-                            }  // API response check
-                        }   // End check if(!empty( $product_out_stocks ))
+                if (
+                    ("APPROVED" == $orderStatus &&
+                    "AUTH_APPROVED" == $paymentStatus)
+                    ||
+                    ("COMPLETED" == $orderStatus &&
+                    "CAPTURED" == $paymentStatus)
+                ) {
+                   
+
+                    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                    $order = $objectManager->create('\Magento\Sales\Model\Order')->load($orderId); // phpcs:ignore
+                    $currentStatus = $order->getState();
+                    $status = 'pending_capture';
+                    $comment = 'In order to capture this transaction, please make the partial capture manually.';
+                    $comment .= ' Wizpay Transaction ID ('. $wzTxnId .')';
+                    $order->addStatusToHistory('pending_capture', $comment, false);
+                    $isNotified = false;
+                    $order->setState($status)->setStatus($status);
+                    $payment = $order->getPayment();
+                    $payment->setTransactionId($wzTxnId);
+                    $payment->setIsTransactionClosed(false);
+                    $payment->addTransaction(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH, null, 0);
+                    $order->save();
+                    
+                    /*$order = $object_Manager->create('\Magento\Sales\Model\Order')->load($orderId);
+                    $order->addStatusToHistory('pending', 'Put your comment here', false);
+                    $order->save();*/
+
+                    $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 115<<<<<<<<<<<<<<<<<<<<-------------------");
+
+                    if (!empty($success_url)) {
+                        $this->_redirect($success_url);
                     } else {
-
-                        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-                        $order = $objectManager->create('\Magento\Sales\Model\Order')->load($orderId); // phpcs:ignore
-                        $currentStatus = $order->getState();
-                        $status = 'pending_capture';
-                        $comment = 'In order to capture this transaction, please make the partial capture manually.';
-                        $comment .= ' Wizpay Transaction ID ('. $wzTxnId .')';
-                        $order->addStatusToHistory('pending_capture', $comment, false);
-                        $isNotified = false;
-                        $order->setState($status)->setStatus($status);
-                        $payment = $order->getPayment();
-                        $payment->setTransactionId($wzTxnId);
-                        $payment->setIsTransactionClosed(false);
-                        $payment->addTransaction(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH, null, 0);
-                        $order->save();
-                        
-                        /*$order = $object_Manager->create('\Magento\Sales\Model\Order')->load($orderId);
-                        $order->addStatusToHistory('pending', 'Put your comment here', false);
-                        $order->save();*/
-
-                        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 420<<<<<<<<<<<<<<<<<<<<-------------------");
-
-                        if (!empty($success_url)) {
-                            $this->_redirect($success_url);
-                        } else {
-                            $this->_redirect('checkout/onepage/success', ['_secure'=> false]);
-                        }
+                        $this->_redirect('checkout/onepage/success', ['_secure'=> false]);
                     }
+                   
                 }
             } // End of [ if ($orderStatus == 'APPROVED' && $paymentStatus == 'AUTH_APPROVED')]
         }//if (isset($_REQUEST['orderid']) && isset($_REQUEST['mref'] ) ) {
