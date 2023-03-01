@@ -36,6 +36,7 @@ class Index extends Action
     private $_messageManager;
 
     private $logger;
+    private $customerSession;
 
     /**
      * @var StockRegistryInterface|null
@@ -67,7 +68,8 @@ class Index extends Action
         Checkout $checkoutHelper,
         Session $checkoutSession,
         OrderFactory $orderFactory,
-        \Psr\Log\LoggerInterface $logger
+        \Psr\Log\LoggerInterface $logger,
+        \Magento\Customer\Model\Session $customerSession
     ) {
         $this->invoiceSender = $invoiceSender;
         $this->resultRedirectFactory = $resultRedirectFactory;
@@ -83,6 +85,7 @@ class Index extends Action
         //$this->authorisationFactory = $authorisationFactory;
         $this->stockRegistry = $stockRegistry;
         $this->logger = $logger;
+        $this->customerSession = $customerSession;
         parent::__construct($context);
     }
 
@@ -145,6 +148,10 @@ class Index extends Action
      */
     public function execute()
     {
+
+
+        $this->logger->info("-------------->>>>>>>>>>>>>>>>Wizpay PlaceOrderProcessor Index start<<<<<<<<<<<<<<--------------");
+
         $orders = $this->_checkoutSession->getLastRealOrder();
         $orderId = $orders->getEntityId();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
@@ -180,6 +187,9 @@ class Index extends Action
                 $modif_order->setState($modif_order_status)->setStatus($modif_order_status);
                 $modif_order->save();
 
+
+                $this->logger->info("-------------->>>>>>>>>>>>>>>>Wizpay PlaceOrderProcessor Index end<<<<<<<<<<<<<<--------------");
+
                 // return retirect url
                 return $resultRedirect;
             }
@@ -211,6 +221,7 @@ class Index extends Action
         $order = $objectManager->create('\Magento\Sales\Model\OrderRepository')->get($orderId); // phpcs:ignore
         $billingaddress = $order->getBillingAddress();
         $getStreet = $billingaddress->getStreet();
+        $shipping_address = $order->getShippingAddress();
         
         $uniqid = hash('md5', time() . $orderId);
         $merchantReference =  'MER' . $uniqid . '-' . $orderId;
@@ -220,6 +231,30 @@ class Index extends Action
         $success_url =  $successurl . '?mref=' . $merchantReference . '&orderid=' . $orderId;
         $fail_url =  $cancelurl . '?mref=' . $merchantReference . '&orderid=' . $orderId;
         //$getStoreCurrency = $this->helper->getStoreCurrency();
+
+        $current_customer = $this->customerSession->getCustomer();
+
+        $first_name = $billingaddress->getFirstname();
+        $last_name = $billingaddress->getLastname();
+
+        if($first_name == null || empty($first_name)){
+            $first_name = $shipping_address->getFirstname();
+             $this->logger->info("firstname and last name from shipping address");
+        }
+
+        if($last_name == null || empty($last_name)){
+            $last_name = $shipping_address->getLastname();
+        }
+
+
+        if($first_name == null || empty($first_name)){
+            $first_name = $current_customer->getFirstname();
+            $this->logger->info("firstname and last name from customer setting");
+        }
+
+        if($last_name == null || empty($last_name)){
+            $last_name = $current_customer->getLastname();
+        }
 
         $getStoreCurrency = 'AUD';
         /*if ($getStoreCurrency != 'AUD'){
@@ -278,12 +313,12 @@ class Index extends Action
             ],
             "consumer"=> [
                 "phoneNumber"=> $billingaddress->getTelephone(),
-                "givenNames"=> $order->getCustomerFirstname(),
-                "surname"=> $order->getCustomerLastname(),
+                "givenNames"=> $first_name,
+                "surname"=> $last_name,
                 "email"=> $order->getCustomerEmail()
             ],
             "billing"=> [
-                "name"=> $order->getCustomerFirstname(),
+                "name"=> $first_name,
                 "line1"=> $addlineOne,
                 "line2"=> $addlineTwo,
                 "area1"=> $billingaddress->getCity(),
@@ -294,7 +329,7 @@ class Index extends Action
                 "phoneNumber"=> $billingaddress->getTelephone()
             ],
             "shipping"=> [
-                "name"=> $order->getCustomerFirstname(),
+                "name"=> $first_name,
                 "line1"=> $addlineOne,
                 "line2"=> $addlineTwo,
                 "area1"=> $billingaddress->getCity(),
@@ -318,9 +353,9 @@ class Index extends Action
                     "displayName"=> null,
                     "discountNumber"=> 0,
                     "amount"=> [
-                        "amount"=> number_format($order->getDiscountAmount(), 2),
-                        "currency"=> $getStoreCurrency
-                    ]
+                            "amount"=> number_format($order->getDiscountAmount(), 2),
+                            "currency"=> $getStoreCurrency
+                        ]
                     ]
                 ],
             "merchant"=> [
@@ -336,7 +371,7 @@ class Index extends Action
                 "currency"=> $getStoreCurrency
             ],
             "shippingAmount"=> [
-                "amount"=> number_format($order->getShippingAmount(), 2),
+                "amount"=> number_format(floatval($shipping_address->getShippingAmount()), 2),
                 "currency"=> $getStoreCurrency
             ]
         ];
