@@ -54,25 +54,24 @@
 
         if(currentProductIdNode){
             var productId = currentProductIdNode.value;
-            console.log('productId=', productId);
+            
             if(Number(productId) > 0){
                 var targetNode = document.getElementById('product-price-' + productId);
-                console.log('targetNode=', targetNode);
+                
                 if(targetNode){                    
                     // Callback function to execute when mutations are observed
                     var callback = function(mutationsList) {
                         for(var mutation of mutationsList) {
                             if (mutation.type == 'childList') {
-                                console.log('price element changed');
-                                console.log('targetNode2=', targetNode);
+                                
                                 // get new value
                                     var newNodes = targetNode.getElementsByClassName('price');
                                     if(newNodes && newNodes.length > 0){
                                         var newValue = newNodes[0];
-                                        console.log('newValue=' , newValue);
+                                        
                                         if(newValue){
                                             var total = currencyToNumber(newValue.innerHTML);
-                                            console.log('total=', total);
+                                            
                                             if(total > 0){
                                                 // re-calc wizpay value
                                                 var priceElement = document.getElementById('wizpay-sub-amount-price');
@@ -86,7 +85,7 @@
 
                             }
                             else if (mutation.type == 'attributes') {
-                                console.log('The ' + mutation.attributeName + ' attribute was modified.');
+                                
                             }
                         }
                     };
