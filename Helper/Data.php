@@ -799,7 +799,7 @@ class Data extends AbstractHelper
 
 
 
-    public function getWizpayMessage($type, $price, $assetRepository, $min_price = 0, $max_price = 99999){
+    public function getWizpayMessage($type, $price, $assetRepository, $min_price = 0, $max_price = 99999, $product_id = 0){
         $banktransferLogoUrl = $assetRepository->getUrlWithParams('Wizpay_Wizpay::images/Group.png', []);
 
                
@@ -835,7 +835,7 @@ class Data extends AbstractHelper
 
 
             $tValue = '';// '<span id="w-price">type=' . $type . ',price=' . $price . ', min-price=' . $min_price . ', max-price=' . $max_price . ', line=</span>';
-            
+
             $total_amount = '$' . number_format($price, 2, '.', ','); 
             $sub_amount = '$' . number_format($price / 4, 2, '.', ',');
 
@@ -852,14 +852,16 @@ class Data extends AbstractHelper
                     // display icon only
                     return $tValue .  '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
                         <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
-                        <span style="'. $this->wizpay_info_content_style .'">&nbsp;or 4 payments of from '. $sub_amount1 . ' to ' . $sub_amount2 .
-                        ' with Wizpay <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
+                        <input type="hidden" id="wizpay-sub-amount-price-productid" name="wizpay-sub-amount-price-productid" value="' . $product_id . '">
+                        <span style="'. $this->wizpay_info_content_style .'">&nbsp;or 4 payments of <span id="wizpay-sub-amount-price">from '. $sub_amount1 . ' to ' . $sub_amount2 .
+                        '</span> with Wizpay <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
                 }else{
                     // display full info
                     return $tValue .  '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
                         <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
-                        <span style="'. $this->wizpay_info_content_style .'">&nbsp;or 4 payments of '. $sub_amount .
-                        ' with Wizpay <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
+                        <input type="hidden" id="wizpay-sub-amount-price-productid" name="wizpay-sub-amount-price-productid" value="' . $product_id . '">
+                        <span style="'. $this->wizpay_info_content_style .'">&nbsp;or 4 payments of <span id="wizpay-sub-amount-price">'. $sub_amount . 
+                        '</span> with Wizpay <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
                 }
                 
             }

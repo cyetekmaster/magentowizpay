@@ -46,5 +46,94 @@
             // load modal
             $('#wizpay-modal-content').modal('openModal');
         });
+        // Options for the observer (which mutations to observe)
+        var config = { attributes: true, childList: true };
+
+        // watching pricing change
+        var currentProductIdNode = document.getElementById('wizpay-sub-amount-price-productid'); 
+
+        if(currentProductIdNode){
+            var productId = currentProductIdNode.value;
+            console.log('productId=', productId);
+            if(Number(productId) > 0){
+                var targetNode = document.getElementById('product-price-' + productId);
+                console.log('targetNode=', targetNode);
+                if(targetNode){                    
+                    // Callback function to execute when mutations are observed
+                    var callback = function(mutationsList) {
+                        for(var mutation of mutationsList) {
+                            if (mutation.type == 'childList') {
+                                console.log('price element changed');
+                                console.log('targetNode2=', targetNode);
+                                // get new value
+                                    var newNodes = targetNode.getElementsByClassName('price');
+                                    if(newNodes && newNodes.length > 0){
+                                        var newValue = newNodes[0];
+                                        console.log('newValue=' , newValue);
+                                        if(newValue){
+                                            var total = currencyToNumber(newValue.innerHTML);
+                                            console.log('total=', total);
+                                            if(total > 0){
+                                                // re-calc wizpay value
+                                                var priceElement = document.getElementById('wizpay-sub-amount-price');
+                                                if(priceElement){
+                                                    priceElement.innerHTML = '$' + (total / 4).toFixed(2);
+                                                }
+                                            }
+                                        }
+                                    }
+
+
+                            }
+                            else if (mutation.type == 'attributes') {
+                                console.log('The ' + mutation.attributeName + ' attribute was modified.');
+                            }
+                        }
+                    };
+
+                    // Create an observer instance linked to the callback function
+                    var observer = new MutationObserver(callback);
+
+                    // Start observing the target node for configured mutations
+                    observer.observe(targetNode, config);
+                } 
+            }
+        }
+
+
+        // Function to convert
+        var currencyToNumber = function convert(currency){
+            var k, temp;
+            try{
+                // Loop to make substring
+                for(var i = 0; i < currency.length; i++){
+
+                    // Getting Unicode value
+                    k = currency.charCodeAt(i);
+
+                    // Checking whether the character
+                    // is of numeric type or not
+                    if(k > 47 && k < 58){
+
+                        // Making substring
+                        temp = currency.substring(i);
+                        break;
+                    }
+                }
+
+                // If currency is in format like
+                // 458, 656.75 then we used replace
+                // method to replace every ', ' with ''
+                temp = temp.replace(/, /, '');
+
+                // Converting string to float
+                // or double and return
+                return parseFloat(temp);   
+            } catch(error){
+                return 0;
+            }
+
+        }
+
     });
 </script>

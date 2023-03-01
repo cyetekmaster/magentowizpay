@@ -73,7 +73,7 @@ class WzView
                 }
 
 
-                $wizpay_info = $this->wizpay_helper->getWizpayMessage('Detail',  $price, $this->assetRepository, $min_price, $max_price);
+                $wizpay_info = $this->wizpay_helper->getWizpayMessage('Detail', $price, $this->assetRepository, $min_price, $max_price, $product->getId());
             }
                   
             return  $html . $wizpay_info; 
