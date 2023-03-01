@@ -148,9 +148,9 @@ class Index extends Action
         // echo $orderId;
         $wzresponse = $this->getOrderData();
         // print_r($order); exit();
-        if (is_array($wzresponse)) {
+        if (isset($wzresponse) &&is_array($wzresponse)) {
 
-            if ('200' == $wzresponse['responseCode']) {
+            if ($wzresponse['responseCode'] != null && '200' == $wzresponse['responseCode']) {
 
                 $redirect_url = $wzresponse['redirectCheckoutUrl'];
                 $wzToken = $wzresponse['token'];
