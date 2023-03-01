@@ -10,7 +10,7 @@ use Magento\Sales\Model\Order;
 class Success extends Index
 {
 
-    private $logger;
+    public $logger;
 
 
     public function __construct(
@@ -82,7 +82,7 @@ class Success extends Index
                 $orderStatus = $wzresponse['transactionStatus'];
                 $paymentStatus = $wzresponse['paymentStatus'];
                 $apiOrderId = $wzresponse['transactionId'];
-                ;
+                
          
                 if (
                     ("APPROVED" == $orderStatus &&
@@ -269,9 +269,10 @@ class Success extends Index
                             $this->_redirect('checkout/onepage/success', ['_secure'=> false]);
                         }
                    // }
-                }
-            } // End of [ if ($orderStatus == 'APPROVED' && $paymentStatus == 'AUTH_APPROVED')]
-        }//if (isset($_REQUEST['orderid']) && isset($_REQUEST['mref'] ) ) {
+                     }
+                } // End of [ if ($orderStatus == 'APPROVED' && $paymentStatus == 'AUTH_APPROVED')]
+            } //if (isset($_REQUEST['orderid']) && isset($_REQUEST['mref'] ) ) {
+        }
     }
 
     private function customAdminEmail($orderId, $out_of_stock_p_details)

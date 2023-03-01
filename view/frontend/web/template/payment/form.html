@@ -1,33 +1,31 @@
-<style>
-    .wizp-custom-payfields .wizp-row {
-        display: flex;
-        flex-wrap: wrap;
-        text-align: center;
-    }
-
-    .wizp-custom-payfields .wizp-row .wizp-col-3 {
-        flex: 0 0 auto;
-        width: 25%;
-    }
-
-    @media screen and (max-width: 576px) {
-        .wizp-custom-payfields .wizp-row .wizp-col-sm-6 {
-            flex: 0 0 auto;
-            width: 50%;
-        }
-    }
-</style>
-
-
-
 
 <div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
+    <style>
+        .wizp-custom-payfields .wizp-row {
+            display: flex;
+            flex-wrap: wrap;
+            text-align: center;
+        }
+
+        .wizp-custom-payfields .wizp-row .wizp-col-3 {
+            flex: 0 0 auto;
+            width: 25%;
+        }
+
+        @media screen and (max-width: 576px) {
+            .wizp-custom-payfields .wizp-row .wizp-col-sm-6 {
+                flex: 0 0 auto;
+                width: 50%;
+            }
+        }
+    </style>
     <div class="payment-method-title field choice">
         <input type="radio" name="payment[method]" class="radio"
             data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()" />
         <img data-bind="attr: {src: getLogoUrl()}" class="payment-icon" />
         <label data-bind="attr: {'for': getCode()}" class="label" for="Wizpay">
             <img data-bind="attr: {src: getLogoUrl()}" class="payment-icon" alt="Wizpay" />
+            &nbsp;&nbsp;<span style="line-height: 25px;" data-bind="text: getTitle()"></span>
         </label>
     </div>
     <div class="payment-method-content">

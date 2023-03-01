@@ -68,6 +68,8 @@ class ConfigProvider implements ConfigProviderInterface // phpcs:ignore
         $getStoreCurrency = $this->helper->getStoreCurrency();
         $banktransferLogoUrl = $this->assetRepository->getUrlWithParams('Wizpay_Wizpay::images/Group.png', []);
 
+        $wizpayTitle = $this->helper->getConfig('payment/wizpay/title');
+
         return [
             'payment' => [
                 'wizpay' => [
@@ -76,7 +78,7 @@ class ConfigProvider implements ConfigProviderInterface // phpcs:ignore
                     'subtotalamount' => $formatted_totalamount,
                     //'getSubtotal1' => $getSubtotal1,
                     'getStoreCurrency' => $getStoreCurrency,
-
+                    'wizpayTitle' => $wizpayTitle,
                 ]
             ]
         ];

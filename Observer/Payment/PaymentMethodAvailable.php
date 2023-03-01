@@ -6,10 +6,11 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Event\Observer;
 
 class PaymentMethodAvailable implements ObserverInterface {
-    private $logger;
-    private $wizpay_data_helper;
-    private $cartManagement;
-    private $session;
+    
+    public $logger;
+    public $wizpay_data_helper;
+    public $cartManagement;
+    public $session;
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,

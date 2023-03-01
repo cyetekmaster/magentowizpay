@@ -31,17 +31,17 @@ class Index extends Action
      */
     protected $orderRepository;
 
-    private $_checkoutHelper;
+    public $_checkoutHelper;
 
-    private $_messageManager;
+    public $_messageManager;
 
-    private $logger;
-    private $customerSession;
+    public $logger;
+    public $customerSession;
 
     /**
      * @var StockRegistryInterface|null
      */
-    private $stockRegistry;
+    public $stockRegistry;
      /**
       * @var \Magento\Framework\View\Result\PageFactory
       */
