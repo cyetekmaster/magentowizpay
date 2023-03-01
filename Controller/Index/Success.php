@@ -10,13 +10,28 @@ use Magento\Sales\Model\Order;
 class Success extends Index
 {
 
+    private $logger;
+
+
+    public function __construct(
+        \Psr\Log\LoggerInterface $logger
+    ) {
+        $this->logger = $logger;
+    }
+    
     public function execute() // phpcs:ignore
     {
-        if (!empty($this->getRequest()->getParam('orderid')) &&
-        !empty($this->getRequest()->getParam('mref'))) {
+
+
+        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK START<<<<<<<<<<<<<<<<<<<<-------------------");
+
+        if (!empty($this->getRequest()->getParam('orderid')) &&  !empty($this->getRequest()->getParam('mref'))) {
            
             $orderId = $this->getRequest()->getParam('orderid');
             $merchantReference = $this->getRequest()->getParam('mref');
+
+            $this->logger->info("callback_request_orderId->" . $orderId);
+            $this->logger->info("callback_request_merchantReference->" . $merchantReference);
 
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 
@@ -48,7 +63,7 @@ class Success extends Index
             $wzresponse = $this->helper->getOrderPaymentStatusApi($wz_api_key, $api_data);
 
             if (!is_array($wzresponse)) {
-
+                $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL getOrderPaymentStatusApi START<<<<<<<<<<<<<<<<<<<<-------------------");
                 $messageconc = "was rejected by Wizpay. Transaction #$wzTxnId.";
                 $this->getCheckoutHelper()->cancelCurrentOrder("Order #".($order->getId())." ". $messageconc);
 
@@ -124,6 +139,14 @@ class Success extends Index
                         $price_total_sum = array_sum($price_total);
                         $out_of_stock_p_details = implode(', ', $all_items);
                                    
+
+                        $this->logger->info("product_out_stocks->" . json_encode($product_out_stocks));
+                        $this->logger->info("get_subtotal->" . floatval($order->getGrandTotal()));
+                        $this->logger->info("capture_amount->" . (floatval($order->getGrandTotal()) - $price_total_sum));
+                        $this->logger->info("backordered->" . $backordered);
+                        $this->logger->info("ordered->" . $ordered);
+
+
                         if (!empty($product_out_stocks)) {
 
                             $get_subtotal = floatval($order->getGrandTotal());
@@ -176,6 +199,8 @@ class Success extends Index
                                 
                                 $this->customAdminEmail($orderId, $out_of_stock_p_details);
 
+                                $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 202<<<<<<<<<<<<<<<<<<<<-------------------");
+
                                 if (!empty($success_url)) {
                                     $this->_redirect($success_url);
                                 } else {
@@ -212,6 +237,8 @@ class Success extends Index
                                             "There was an error in the partial captured amount"
                                         )
                                     );
+
+                                    $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 241<<<<<<<<<<<<<<<<<<<<-------------------");
 
                                     if (!empty($failed_url)) {
 
@@ -270,6 +297,9 @@ class Success extends Index
                                     }
                                     $this->customAdminEmail($orderId, $out_of_stock_p_details);
                                     
+
+                                    $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 301<<<<<<<<<<<<<<<<<<<<-------------------");
+
                                     if (!empty($success_url)) {
                                             $this->_redirect($success_url);
                                     } else {
@@ -300,6 +330,8 @@ class Success extends Index
                                         "There was an error in the Wizpay payment"
                                     )
                                 );
+
+                                $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 334<<<<<<<<<<<<<<<<<<<<-------------------");
 
                                 if (!empty($failed_url)) {
 
@@ -354,6 +386,9 @@ class Success extends Index
                                 );
                                 
                                 $order->save();
+
+                                $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 390<<<<<<<<<<<<<<<<<<<<-------------------");
+
                                 if (!empty($success_url)) {
                                     $this->_redirect($success_url);
                                 } else {
@@ -381,6 +416,9 @@ class Success extends Index
                         /*$order = $object_Manager->create('\Magento\Sales\Model\Order')->load($orderId);
                         $order->addStatusToHistory('pending', 'Put your comment here', false);
                         $order->save();*/
+
+                        $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL BACK END 420<<<<<<<<<<<<<<<<<<<<-------------------");
+
                         if (!empty($success_url)) {
                             $this->_redirect($success_url);
                         } else {
