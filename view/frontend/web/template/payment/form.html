@@ -105,7 +105,7 @@
                   <button data-role="review-save" type="submit" data-bind="
                      attr: {title: $t('Place Order')},
                      enable: (getCode() == isChecked()),
-                     click: continueToWizpay,
+                     click: placeOrder,
                      css: {disabled: !isPlaceOrderActionAllowed()}
                      " class="action primary checkout" disabled>
                   <span data-bind="i18n: 'Place Order with Wizpay'"></span>

@@ -19,7 +19,7 @@ define(
         quote) {
         'use strict';
 
-        if(window.checkoutConfig.payment.wizpay.default_country != 'AU'){
+        if(window.checkoutConfig.payment.wizpay.default_country != 'AU' ){
             return Component.extend({
                 defaults: {
                     template: 'Wizpay_Wizpay/payment/outzoneform',

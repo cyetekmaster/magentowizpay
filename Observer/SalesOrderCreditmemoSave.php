@@ -38,16 +38,18 @@ class SalesOrderCreditmemoSave implements ObserverInterface
         $order = $creditmemo->getOrder();
         $payment = $order->getPayment();
 
-        if ($creditmemo->getBaseGrandTotal() <= 0) {
-                
-            $order->addStatusHistoryComment(__('Please enter a valid refund amount: $'. $creditmemo->getBaseGrandTotal()))->save(); // phpcs:ignore
-
-            throw new \Magento\Framework\Exception\CouldNotDeleteException(__('Please enter a valid refund amount.')); // phpcs:ignore
-        }
+        
 
         if ($payment->getMethod() == 'wizpay') {
 
-            
+            if ($creditmemo->getBaseGrandTotal() <= 0) {
+
+                $order->addStatusHistoryComment(__('Please enter a valid refund amount: $'. $creditmemo->getBaseGrandTotal()))->save(); // phpcs:ignore
+
+                throw new \Magento\Framework\Exception\CouldNotDeleteException(__('Please enter a valid refund amount.')); // phpcs:ignore
+            }
+
+
             $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY SalesOrderCreditmemoSave Start<<<<<<<<<<<<<<<<<<<<-------------------");
 
 
