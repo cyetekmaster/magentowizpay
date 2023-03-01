@@ -61,7 +61,7 @@ class FieldValidation extends \Magento\Framework\App\Config\Value
         RequestInterface $request,
         Data $helper,
         array $data = [],
-        \Magento\Framework\Message\ManagerInterface $messageManager,
+        \Magento\Framework\Message\ManagerInterface $messageManager
     ) {
         $this->_configValueFactory = $configValueFactory;
         $this->helper = $helper;
