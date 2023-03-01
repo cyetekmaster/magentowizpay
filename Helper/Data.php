@@ -853,7 +853,7 @@ class Data extends AbstractHelper
                     return $tValue .  '<div style="'. $this->wizpay_info_style_oneline . $this->wizpay_info_style_product_detail .'">
                         <img style="'. $this->wizpay_info_logo_style .'" src="' . $banktransferLogoUrl . '" /> 
                         <input type="hidden" id="wizpay-sub-amount-price-productid" name="wizpay-sub-amount-price-productid" value="' . $product_id . '">
-                        <span style="'. $this->wizpay_info_content_style .'">&nbsp;or 4 payments of <span id="wizpay-sub-amount-price">from '. $sub_amount1 . ' to ' . $sub_amount2 .
+                        <span style="'. $this->wizpay_info_content_style .'">&nbsp;or 4 payments of <span id="wizpay-sub-amount-price">from <span id="wizpay-sub-amount-price">'. $sub_amount .'</span> to ' . $sub_amount2 .
                         '</span> with Wizpay <a href="#" class="wizpay-learn-more-popup-link">learn more</a><span></div>';
                 }else{
                     // display full info
