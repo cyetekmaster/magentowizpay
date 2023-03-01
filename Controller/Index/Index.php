@@ -256,6 +256,12 @@ class Index extends Action
             $last_name = $current_customer->getLastname();
         }
 
+        $email = $order->getCustomerEmail();
+        if(empty($email) || $email == null){
+            $email = $billingaddress->getEmail();
+            $order->setCustomerEmail($email);
+        }
+
         $getStoreCurrency = 'AUD';
         /*if ($getStoreCurrency != 'AUD'){
             return;
@@ -315,7 +321,7 @@ class Index extends Action
                 "phoneNumber"=> $billingaddress->getTelephone(),
                 "givenNames"=> $first_name,
                 "surname"=> $last_name,
-                "email"=> $order->getCustomerEmail()
+                "email"=> $email
             ],
             "billing"=> [
                 "name"=> $first_name,

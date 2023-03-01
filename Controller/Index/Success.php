@@ -432,18 +432,18 @@ class Success extends Index
 
     private function customAdminEmail($orderId, $out_of_stock_p_details)
     {
-        $email = $this->helper->getConfig('trans_email/ident_general/email');
-        $mailmsg = $out_of_stock_p_details . ' from the order are not in stock, so payment was not captured. You need to capture the payment manually after it is back in stock.'; // phpcs:ignore
-        $mailTransportFactory = $this->helper->mailTransportFactory();
-        $message = new \Magento\Framework\Mail\Message();
-        /*$message->setFrom($email);*/ // phpcs:ignore
-        $message->addTo($email);
-        $message->setSubject('New Order #' . $orderId . ' Placed With Out Of Stock Items');
-        $message->setBody($mailmsg);
-        $transport = $mailTransportFactory->create(['message' => $message]);
-        //print_r($transport);
-        return;
-        $transport->sendMessage(); // phpcs:ignore
+        // $email = $this->helper->getConfig('trans_email/ident_general/email');
+        // $mailmsg = $out_of_stock_p_details . ' from the order are not in stock, so payment was not captured. You need to capture the payment manually after it is back in stock.'; // phpcs:ignore
+        // $mailTransportFactory = $this->helper->mailTransportFactory();
+        // $message = new \Magento\Framework\Mail\Message();
+        // /*$message->setFrom($email);*/ // phpcs:ignore
+        // $message->addTo($email);
+        // $message->setSubject('New Order #' . $orderId . ' Placed With Out Of Stock Items');
+        // $message->setBody($mailmsg);
+        // $transport = $mailTransportFactory->create(['message' => $message]);
+        // //print_r($transport);
+        // return;
+        // $transport->sendMessage(); // phpcs:ignore
     }
 
     private function statusExists($orderStatus)
