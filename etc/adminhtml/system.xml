@@ -74,6 +74,10 @@
                     <comment>User will be returned to this page after failed transaction on Wizpay payment page.</comment>                 
                 </field>
 
+                <field id="sort_order" translate="label" type="text" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="1" >
+                    <label>Sort Order</label>
+                </field>
+
                 <!-- Group 2 for Website Customisation -->
                 <group id="website_customisation" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" >
                     <label>Website Customisation</label>
