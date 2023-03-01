@@ -35,6 +35,8 @@ class Index extends Action
 
     private $_messageManager;
 
+    private $logger;
+
     /**
      * @var StockRegistryInterface|null
      */
@@ -64,7 +66,8 @@ class Index extends Action
         Data $helper,
         Checkout $checkoutHelper,
         Session $checkoutSession,
-        OrderFactory $orderFactory
+        OrderFactory $orderFactory,
+        \Psr\Log\LoggerInterface $logger
     ) {
         $this->invoiceSender = $invoiceSender;
         $this->resultRedirectFactory = $resultRedirectFactory;
@@ -79,6 +82,7 @@ class Index extends Action
         $this->_invoiceService = $invoiceService;
         //$this->authorisationFactory = $authorisationFactory;
         $this->stockRegistry = $stockRegistry;
+        $this->logger = $logger;
         parent::__construct($context);
     }
 
