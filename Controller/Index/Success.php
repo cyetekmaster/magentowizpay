@@ -41,6 +41,27 @@ class Success extends Index
 
             $order = $objectManager->create('\Magento\Sales\Model\OrderRepository')->get($orderId); // phpcs:ignore
 
+
+            // check if order status already changed then ignore it
+            $modif_order_status = 'pending_payment';
+            if($order->getState() != null && $order->getState() == $modif_order_status && $order->getStatus() != null && $order->getStatus() == $modif_order_status){
+                // do nothing keep process order
+                $this->logger->info(
+                    "-------------------->>>>>>>>>>>>>>>>>>" . $this->callback_source . " Pass order status & state check and keep going to process the order<<<<<<<<<<<<<<<<<<<<-------------------"
+                );
+            }else{
+                $this->logger->info(
+                    "-------------------->>>>>>>>>>>>>>>>>>" . $this->callback_source . " Order already processed state=". $order->getState()  .", status=" . $order->getStatus() . "<<<<<<<<<<<<<<<<<<<<-------------------"
+                );
+                if (!empty($success_url)) {
+                    $this->_redirect($success_url);
+                } else {
+                    $this->_redirect('checkout/onepage/success', ['_secure'=> false]);
+                }
+            }
+
+
+
             $additionalInformation = $order->getPayment()->getAdditionalInformation();
             $wz_token = $additionalInformation['token'];
             $wzTxnId = $additionalInformation['transactionId'];
