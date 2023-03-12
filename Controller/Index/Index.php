@@ -322,7 +322,7 @@ class Index extends Action
                 $itemsdata[] = [
                     'name' => $item->getName(),
                     'sku' => $item->getSku(),
-                    'quantity' => (int)$item->getQty(),
+                    'quantity' => (int)($item->getQtyOrdered() ?? 0),
                     'ShippingRequired' => $product->getTypeId() != 'virtual' && $product->getTypeId() != 'downloadable',
                     'price' => [
                         'amount' => number_format($item->getPrice(), 2),
