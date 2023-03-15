@@ -5,46 +5,24 @@ namespace Wizpay\Wizpay\Controller\Index;
 use Magento\Sales\Model\Order;
 use \Wizpay\Wizpay\Helper\Data;
 use \Wizpay\Wizpay\Helper\Checkout;
-use Magento\Checkout\Model\Session;
-use Magento\Sales\Model\OrderFactory;
-use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\ResponseInterface;
-use Magento\Framework\View\Result\PageFactory;
-//use Magento\CatalogInventory\Api\StockRegistryInterface;
-//use Magento\CatalogInventory\Api\Data\StockItemInterface;
-
+use \Magento\Checkout\Model\Session;
+use \Magento\Sales\Model\OrderFactory;
+use \Magento\Framework\App\Action\Action;
+use \Magento\Framework\App\Action\Context;
+use \Magento\Framework\App\ResponseInterface;
+use \Magento\Framework\View\Result\PageFactory;
+use \Magento\CatalogInventory\Api\StockRegistryInterface;
+use \Magento\CatalogInventory\Api\Data\StockItemInterface;
 
 /**
  * Oxipay\OxipayPaymentGateway\Controller\Checkout
  */
-class Success extends Action
+class Success extends Index
 {
 
     public $logger;
     public $callback_source;
 
-
-    public $resultRedirectFactory;
-    /**
-     * @var \Magento\Sales\Api\OrderRepositoryInterface
-     */
-    public $orderRepository;
-
-    public $_checkoutHelper;
-
-    public $_messageManager;
-
-    public $customerSession;
-
-    /**
-     * @var StockRegistryInterface|null
-     */
-    //public $stockRegistry;
-     /**
-      * @var \Magento\Framework\View\Result\PageFactory
-      */
-      public $resultPageFactory;
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -53,33 +31,19 @@ class Success extends Action
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         \Magento\Sales\Model\Service\InvoiceService $invoiceService,
         \Magento\Framework\DB\Transaction $transaction,
-        //StockRegistryInterface $stockRegistry,
+        StockRegistryInterface $stockRegistry,
         //\Magento\Paypal\Model\Adminhtml\ExpressFactory $authorisationFactory,
         \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
-        Data $helper,
-        Checkout $checkoutHelper,
-        Session $checkoutSession,
-        OrderFactory $orderFactory,
+        \Wizpay\Wizpay\Helper\Data $helper,
+        \Wizpay\Wizpay\Helper\Checkout $checkoutHelper,
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Sales\Model\OrderFactory $orderFactory,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Customer\Model\Session $customerSession
     ) {
-        $this->invoiceSender = $invoiceSender;
-        $this->resultRedirectFactory = $resultRedirectFactory;
-        $this->resultPageFactory = $resultPageFactory;
-        $this->_checkoutSession = $checkoutSession;
-        $this->_orderFactory = $orderFactory;
-        $this->helper = $helper;
-        $this->_transaction = $transaction;
-        $this->_messageManager = $context->getMessageManager();
-        $this->_checkoutHelper = $checkoutHelper;
-        $this->orderRepository = $orderRepository;
-        $this->_invoiceService = $invoiceService;
-        //$this->authorisationFactory = $authorisationFactory;
-        //$this->stockRegistry = $stockRegistry;
-        $this->logger = $logger;
-        $this->customerSession = $customerSession;
-        parent::__construct($context);
-        
+        parent::__construct($context, $resultPageFactory, $resultRedirectFactory, $orderRepository, $invoiceService, $transaction, $stockRegistry, $invoiceSender, $helper, $checkoutHelper,
+    $checkoutSession, $orderFactory,  $logger, $customerSession);
+
         $this->callback_source = "Success CALL BACK";
     }
     
@@ -106,12 +70,12 @@ class Success extends Action
 
             // check if order status already changed then ignore it
             $modif_order_status = 'pending_payment';
-            if($order->getState() != null && $order->getState() == $modif_order_status && $order->getStatus() != null && $order->getStatus() == $modif_order_status){
+            if($order != null && $order->getState() != null && $order->getState() == $modif_order_status && $order->getStatus() != null && $order->getStatus() == $modif_order_status){
                 // do nothing keep process order
                 $this->logger->info(
                     "-------------------->>>>>>>>>>>>>>>>>>" . $this->callback_source . " Pass order status & state check and keep going to process the order<<<<<<<<<<<<<<<<<<<<-------------------"
                 );
-            }else if($order){
+            }else if($order != null){
                 $this->logger->info(
                     "-------------------->>>>>>>>>>>>>>>>>>" . $this->callback_source . " Order already processed state=". $order->getState()  .", status=" . $order->getStatus() . "<<<<<<<<<<<<<<<<<<<<-------------------"
                 );
@@ -121,17 +85,15 @@ class Success extends Action
                     $this->_redirect('checkout/onepage/success', ['_secure'=> false]);
                 }
                 return;
-            }
-            else{
+            }else{
                 $this->logger->info(
-                    "-------------------->>>>>>>>>>>>>>>>>>" . $this->callback_source . " - No order has been found<<<<<<<<<<<<<<<<<<<<-------------------"
+                    "-------------------->>>>>>>>>>>>>>>>>>" . $this->callback_source . " No order has been found<<<<<<<<<<<<<<<<<<<<-------------------"
                 );
                 if (!empty($success_url)) {
                     $this->_redirect($success_url);
                 } else {
                     $this->_redirect('checkout/onepage/success', ['_secure'=> false]);
                 }
-
                 return;
             }
 
@@ -165,10 +127,10 @@ class Success extends Action
             if (!is_array($wzresponse)) {
                 $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL getOrderPaymentStatusApi START<<<<<<<<<<<<<<<<<<<<-------------------");
                 $messageconc = "was rejected by Wizpay. Transaction #$wzTxnId.";
-                $this->_checkoutHelper->cancelCurrentOrder("Order #".($order->getId())." ". $messageconc);
+                $this->getCheckoutHelper()->cancelCurrentOrder("Order #".($order->getId())." ". $messageconc);
 
-                $this->_checkoutHelper->restoreQuote(); //restore cart
-                $this->_messageManager->addErrorMessage(__("There was an error in the Wizpay payment"));
+                $this->getCheckoutHelper()->restoreQuote(); //restore cart
+                $this->getMessageManager()->addErrorMessage(__("There was an error in the Wizpay payment"));
 
                 if (!empty($failed_url)) {
 
@@ -266,10 +228,10 @@ class Success extends Action
 
                         if (!is_array($wzresponse)) {
 
-                            $this->_checkoutHelper->cancelCurrentOrder(
+                            $this->getCheckoutHelper()->cancelCurrentOrder(
                             "Order #".($order->getId())." was rejected by Wizpay. Transaction ID" . $apiOrderId); // phpcs:ignore
-                            $this->_checkoutHelper->restoreQuote(); //restore cart
-                            $this->_messageManager->addErrorMessage(
+                            $this->getCheckoutHelper()->restoreQuote(); //restore cart
+                            $this->getMessageManager()->addErrorMessage(
                                 __(
                                     "There was an error in the Wizpay payment"
                                 )

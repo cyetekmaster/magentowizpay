@@ -7,7 +7,22 @@
  * @link
  */
 
- namespace Wizpay\Wizpay\Controller\Index;
+namespace Wizpay\Wizpay\Controller\Index;
+
+
+
+use Magento\Sales\Model\Order;
+use \Wizpay\Wizpay\Helper\Data;
+use \Wizpay\Wizpay\Helper\Checkout;
+use \Magento\Checkout\Model\Session;
+use \Magento\Sales\Model\OrderFactory;
+use \Magento\Framework\App\Action\Action;
+use \Magento\Framework\App\Action\Context;
+use \Magento\Framework\App\ResponseInterface;
+use \Magento\Framework\View\Result\PageFactory;
+use \Magento\CatalogInventory\Api\StockRegistryInterface;
+use \Magento\CatalogInventory\Api\Data\StockItemInterface;
+
 
 class WebhookComfirmUrl extends Success
 {
@@ -19,20 +34,20 @@ class WebhookComfirmUrl extends Success
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         \Magento\Sales\Model\Service\InvoiceService $invoiceService,
         \Magento\Framework\DB\Transaction $transaction,
-        //StockRegistryInterface $stockRegistry,
+        StockRegistryInterface $stockRegistry,
         //\Magento\Paypal\Model\Adminhtml\ExpressFactory $authorisationFactory,
         \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
-        Data $helper,
-        Checkout $checkoutHelper,
-        Session $checkoutSession,
-        OrderFactory $orderFactory,
+        \Wizpay\Wizpay\Helper\Data $helper,
+        \Wizpay\Wizpay\Helper\Checkout $checkoutHelper,
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Sales\Model\OrderFactory $orderFactory,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Customer\Model\Session $customerSession
     ) {
        
         
-        parent::__construct($context, $resultPageFactory, $resultRedirectFactory, $orderRepository, $invoiceService, $transaction, $invoiceSender, $helper, $checkoutHelper,
-    $checkoutSession, $orderFactory, $orderFactory, $logger, $customerSession);
+        parent::__construct($context, $resultPageFactory, $resultRedirectFactory, $orderRepository, $invoiceService, $transaction, $stockRegistry, $invoiceSender, $helper, $checkoutHelper,
+    $checkoutSession, $orderFactory,  $logger, $customerSession);
 
         $this->callback_source = "WebhookComfirmUrl CALL BACK";
     }

@@ -11,25 +11,25 @@ namespace Wizpay\Wizpay\Controller\Index;
 
 use \Wizpay\Wizpay\Helper\Data;
 use \Wizpay\Wizpay\Helper\Checkout;
-use Magento\Checkout\Model\Session;
-use Magento\Sales\Model\OrderFactory;
-use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\ResponseInterface;
-use Magento\Framework\View\Result\PageFactory;
-//use Magento\CatalogInventory\Api\StockRegistryInterface;
-//use Magento\CatalogInventory\Api\Data\StockItemInterface;
+use \Magento\Checkout\Model\Session;
+use \Magento\Sales\Model\OrderFactory;
+use \Magento\Framework\App\Action\Action;
+use \Magento\Framework\App\Action\Context;
+use \Magento\Framework\App\ResponseInterface;
+use \Magento\Framework\View\Result\PageFactory;
+use \Magento\CatalogInventory\Api\StockRegistryInterface;
+use \Magento\CatalogInventory\Api\Data\StockItemInterface;
 
 class Index extends Action
 {
     /**
      * @var PageFactory
      */
-    protected $resultRedirectFactory;
+    public $resultRedirectFactory;
     /**
      * @var \Magento\Sales\Api\OrderRepositoryInterface
      */
-    protected $orderRepository;
+    public $orderRepository;
 
     public $_checkoutHelper;
 
@@ -41,11 +41,13 @@ class Index extends Action
     /**
      * @var StockRegistryInterface|null
      */
-    //public $stockRegistry;
+    public $stockRegistry;
      /**
       * @var \Magento\Framework\View\Result\PageFactory
       */
-    protected $resultPageFactory;
+    public $resultPageFactory;
+
+    public $helper;
     /**
      * Index constructor.
      * @param PageFactory $resultRedirectFactory
@@ -61,13 +63,13 @@ class Index extends Action
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         \Magento\Sales\Model\Service\InvoiceService $invoiceService,
         \Magento\Framework\DB\Transaction $transaction,
-        //StockRegistryInterface $stockRegistry,
+        StockRegistryInterface $stockRegistry,
         //\Magento\Paypal\Model\Adminhtml\ExpressFactory $authorisationFactory,
         \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
-        Data $helper,
-        Checkout $checkoutHelper,
-        Session $checkoutSession,
-        OrderFactory $orderFactory,
+        \Wizpay\Wizpay\Helper\Data $helper,
+        \Wizpay\Wizpay\Helper\Checkout $checkoutHelper,
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Sales\Model\OrderFactory $orderFactory,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Customer\Model\Session $customerSession
     ) {
@@ -83,7 +85,7 @@ class Index extends Action
         $this->orderRepository = $orderRepository;
         $this->_invoiceService = $invoiceService;
         //$this->authorisationFactory = $authorisationFactory;
-        //$this->stockRegistry = $stockRegistry;
+        $this->stockRegistry = $stockRegistry;
         $this->logger = $logger;
         $this->customerSession = $customerSession;
         parent::__construct($context);
@@ -130,13 +132,13 @@ class Index extends Action
      * @param int $productId
      * @return bool
      */
-    // protected function getStockStatus($productId)
-    // {
-    //     /** @var StockItemInterface $stockItem */
-    //     $stockItem = $this->stockRegistry->getStockItem($productId);
-    //     $isInStock = $stockItem ? $stockItem->getIsInStock() : false;
-    //     return $isInStock;
-    // }
+    protected function getStockStatus($productId)
+    {
+        /** @var StockItemInterface $stockItem */
+        $stockItem = $this->stockRegistry->getStockItem($productId);
+        $isInStock = $stockItem ? $stockItem->getIsInStock() : false;
+        return $isInStock;
+    }
 
     /**
      * Execute action based on request and return result
