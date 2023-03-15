@@ -13,9 +13,27 @@ class WebhookComfirmUrl extends Success
 {
 
     public function __construct(
-        \Psr\Log\LoggerInterface $logger
+        \Magento\Framework\App\Action\Context $context,
+        \Magento\Framework\View\Result\PageFactory $resultPageFactory,
+        \Magento\Framework\Controller\Result\Redirect $resultRedirectFactory,
+        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
+        \Magento\Sales\Model\Service\InvoiceService $invoiceService,
+        \Magento\Framework\DB\Transaction $transaction,
+        //StockRegistryInterface $stockRegistry,
+        //\Magento\Paypal\Model\Adminhtml\ExpressFactory $authorisationFactory,
+        \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
+        Data $helper,
+        Checkout $checkoutHelper,
+        Session $checkoutSession,
+        OrderFactory $orderFactory,
+        \Psr\Log\LoggerInterface $logger,
+        \Magento\Customer\Model\Session $customerSession
     ) {
-        $this->logger = $logger;
+       
+        
+        parent::__construct($context, $resultPageFactory, $resultRedirectFactory, $orderRepository, $invoiceService, $transaction, $invoiceSender, $helper, $checkoutHelper,
+    $checkoutSession, $orderFactory, $orderFactory, $logger, $customerSession);
+
         $this->callback_source = "WebhookComfirmUrl CALL BACK";
     }
 

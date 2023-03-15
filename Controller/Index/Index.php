@@ -17,8 +17,8 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\View\Result\PageFactory;
-use Magento\CatalogInventory\Api\StockRegistryInterface;
-use Magento\CatalogInventory\Api\Data\StockItemInterface;
+//use Magento\CatalogInventory\Api\StockRegistryInterface;
+//use Magento\CatalogInventory\Api\Data\StockItemInterface;
 
 class Index extends Action
 {
@@ -41,7 +41,7 @@ class Index extends Action
     /**
      * @var StockRegistryInterface|null
      */
-    public $stockRegistry;
+    //public $stockRegistry;
      /**
       * @var \Magento\Framework\View\Result\PageFactory
       */
@@ -61,7 +61,7 @@ class Index extends Action
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         \Magento\Sales\Model\Service\InvoiceService $invoiceService,
         \Magento\Framework\DB\Transaction $transaction,
-        StockRegistryInterface $stockRegistry,
+        //StockRegistryInterface $stockRegistry,
         //\Magento\Paypal\Model\Adminhtml\ExpressFactory $authorisationFactory,
         \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
         Data $helper,
@@ -83,7 +83,7 @@ class Index extends Action
         $this->orderRepository = $orderRepository;
         $this->_invoiceService = $invoiceService;
         //$this->authorisationFactory = $authorisationFactory;
-        $this->stockRegistry = $stockRegistry;
+        //$this->stockRegistry = $stockRegistry;
         $this->logger = $logger;
         $this->customerSession = $customerSession;
         parent::__construct($context);
@@ -130,13 +130,13 @@ class Index extends Action
      * @param int $productId
      * @return bool
      */
-    protected function getStockStatus($productId)
-    {
-        /** @var StockItemInterface $stockItem */
-        $stockItem = $this->stockRegistry->getStockItem($productId);
-        $isInStock = $stockItem ? $stockItem->getIsInStock() : false;
-        return $isInStock;
-    }
+    // protected function getStockStatus($productId)
+    // {
+    //     /** @var StockItemInterface $stockItem */
+    //     $stockItem = $this->stockRegistry->getStockItem($productId);
+    //     $isInStock = $stockItem ? $stockItem->getIsInStock() : false;
+    //     return $isInStock;
+    // }
 
     /**
      * Execute action based on request and return result
@@ -330,12 +330,12 @@ class Index extends Action
                     ]
                 ];
 
-                $item_sub_total = $item_sub_total + floatval($item->getPrice());
+                $item_sub_total = $item_sub_total + floatval($item->getPrice() * ($item->getQtyOrdered() ?? 0));
             }
         }
 
         // total ground - shipping - cart subtotal - tax - discount 
-        $other_special_item_total = floatval($order->getGrandTotal()) - floatval($shipping_address->getShippingAmount()) - $item_sub_total - floatval($shipping_address->getBaseTaxAmount());
+        $other_special_item_total = floatval($order->getGrandTotal()) - floatval($order->getBaseShippingInclTax()) - $item_sub_total - floatval($order->getBaseTaxAmount());
 
         $data = [
             "amount"=> [
@@ -403,11 +403,11 @@ class Index extends Action
             'merchantOrderId'=> $orderId,
 
             "taxAmount"=> [
-                "amount"=> number_format(floatval($shipping_address->getBaseTaxAmount()), 2),
+                "amount"=> number_format(floatval($order->getBaseTaxAmount()), 2),
                 "currency"=> $getStoreCurrency
             ],
             "shippingAmount"=> [
-                "amount"=> number_format(floatval($shipping_address->getShippingAmount()), 2),
+                "amount"=> number_format(floatval($order->getBaseShippingInclTax()), 2),
                 "currency"=> $getStoreCurrency
             ]
         ];

@@ -3,21 +3,83 @@
 namespace Wizpay\Wizpay\Controller\Index;
 
 use Magento\Sales\Model\Order;
+use \Wizpay\Wizpay\Helper\Data;
+use \Wizpay\Wizpay\Helper\Checkout;
+use Magento\Checkout\Model\Session;
+use Magento\Sales\Model\OrderFactory;
+use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\View\Result\PageFactory;
+//use Magento\CatalogInventory\Api\StockRegistryInterface;
+//use Magento\CatalogInventory\Api\Data\StockItemInterface;
+
 
 /**
  * Oxipay\OxipayPaymentGateway\Controller\Checkout
  */
-class Success extends Index
+class Success extends Action
 {
 
     public $logger;
     public $callback_source;
 
 
+    public $resultRedirectFactory;
+    /**
+     * @var \Magento\Sales\Api\OrderRepositoryInterface
+     */
+    public $orderRepository;
+
+    public $_checkoutHelper;
+
+    public $_messageManager;
+
+    public $customerSession;
+
+    /**
+     * @var StockRegistryInterface|null
+     */
+    //public $stockRegistry;
+     /**
+      * @var \Magento\Framework\View\Result\PageFactory
+      */
+      public $resultPageFactory;
+
     public function __construct(
-        \Psr\Log\LoggerInterface $logger
+        \Magento\Framework\App\Action\Context $context,
+        \Magento\Framework\View\Result\PageFactory $resultPageFactory,
+        \Magento\Framework\Controller\Result\Redirect $resultRedirectFactory,
+        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
+        \Magento\Sales\Model\Service\InvoiceService $invoiceService,
+        \Magento\Framework\DB\Transaction $transaction,
+        //StockRegistryInterface $stockRegistry,
+        //\Magento\Paypal\Model\Adminhtml\ExpressFactory $authorisationFactory,
+        \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
+        Data $helper,
+        Checkout $checkoutHelper,
+        Session $checkoutSession,
+        OrderFactory $orderFactory,
+        \Psr\Log\LoggerInterface $logger,
+        \Magento\Customer\Model\Session $customerSession
     ) {
+        $this->invoiceSender = $invoiceSender;
+        $this->resultRedirectFactory = $resultRedirectFactory;
+        $this->resultPageFactory = $resultPageFactory;
+        $this->_checkoutSession = $checkoutSession;
+        $this->_orderFactory = $orderFactory;
+        $this->helper = $helper;
+        $this->_transaction = $transaction;
+        $this->_messageManager = $context->getMessageManager();
+        $this->_checkoutHelper = $checkoutHelper;
+        $this->orderRepository = $orderRepository;
+        $this->_invoiceService = $invoiceService;
+        //$this->authorisationFactory = $authorisationFactory;
+        //$this->stockRegistry = $stockRegistry;
         $this->logger = $logger;
+        $this->customerSession = $customerSession;
+        parent::__construct($context);
+        
         $this->callback_source = "Success CALL BACK";
     }
     
@@ -49,7 +111,7 @@ class Success extends Index
                 $this->logger->info(
                     "-------------------->>>>>>>>>>>>>>>>>>" . $this->callback_source . " Pass order status & state check and keep going to process the order<<<<<<<<<<<<<<<<<<<<-------------------"
                 );
-            }else{
+            }else if($order){
                 $this->logger->info(
                     "-------------------->>>>>>>>>>>>>>>>>>" . $this->callback_source . " Order already processed state=". $order->getState()  .", status=" . $order->getStatus() . "<<<<<<<<<<<<<<<<<<<<-------------------"
                 );
@@ -58,6 +120,19 @@ class Success extends Index
                 } else {
                     $this->_redirect('checkout/onepage/success', ['_secure'=> false]);
                 }
+                return;
+            }
+            else{
+                $this->logger->info(
+                    "-------------------->>>>>>>>>>>>>>>>>>" . $this->callback_source . " - No order has been found<<<<<<<<<<<<<<<<<<<<-------------------"
+                );
+                if (!empty($success_url)) {
+                    $this->_redirect($success_url);
+                } else {
+                    $this->_redirect('checkout/onepage/success', ['_secure'=> false]);
+                }
+
+                return;
             }
 
 
@@ -90,10 +165,10 @@ class Success extends Index
             if (!is_array($wzresponse)) {
                 $this->logger->info("-------------------->>>>>>>>>>>>>>>>>>WIZPAY CALL getOrderPaymentStatusApi START<<<<<<<<<<<<<<<<<<<<-------------------");
                 $messageconc = "was rejected by Wizpay. Transaction #$wzTxnId.";
-                $this->getCheckoutHelper()->cancelCurrentOrder("Order #".($order->getId())." ". $messageconc);
+                $this->_checkoutHelper->cancelCurrentOrder("Order #".($order->getId())." ". $messageconc);
 
-                $this->getCheckoutHelper()->restoreQuote(); //restore cart
-                $this->getMessageManager()->addErrorMessage(__("There was an error in the Wizpay payment"));
+                $this->_checkoutHelper->restoreQuote(); //restore cart
+                $this->_messageManager->addErrorMessage(__("There was an error in the Wizpay payment"));
 
                 if (!empty($failed_url)) {
 
@@ -191,10 +266,10 @@ class Success extends Index
 
                         if (!is_array($wzresponse)) {
 
-                            $this->getCheckoutHelper()->cancelCurrentOrder(
+                            $this->_checkoutHelper->cancelCurrentOrder(
                             "Order #".($order->getId())." was rejected by Wizpay. Transaction ID" . $apiOrderId); // phpcs:ignore
-                            $this->getCheckoutHelper()->restoreQuote(); //restore cart
-                            $this->getMessageManager()->addErrorMessage(
+                            $this->_checkoutHelper->restoreQuote(); //restore cart
+                            $this->_messageManager->addErrorMessage(
                                 __(
                                     "There was an error in the Wizpay payment"
                                 )
